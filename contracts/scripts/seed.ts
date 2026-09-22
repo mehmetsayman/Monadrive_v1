@@ -42,9 +42,14 @@ const GARAGES = [
   { label: "ekspertiz", name: "TrustPoint Ekspertiz" },
 ] as const;
 
-/** Enough for a few hundred records at Monad testnet prices. */
-const GARAGE_FUNDING = parseEther("0.05");
-const GARAGE_MIN_BALANCE = parseEther("0.02");
+/**
+ * Monad testnet runs a base fee around 100 gwei, and viem reserves
+ * `maxFeePerGas * gasLimit` up front - roughly 0.05 MON for a single register call
+ * even though the transaction actually costs a fraction of that. So each garage
+ * needs headroom for several writes, not just their real cost.
+ */
+const GARAGE_TARGET_BALANCE = parseEther("0.4");
+const GARAGE_MIN_BALANCE = parseEther("0.15");
 
 type Step = {
   by: number;
@@ -167,8 +172,9 @@ for (const garage of GARAGES) {
 
   const balance = await publicClient.getBalance({ address: account.address });
   if (balance < GARAGE_MIN_BALANCE) {
-    await send(`fund ${garage.name} (${formatEther(GARAGE_FUNDING)} MON)`, () =>
-      deployer.sendTransaction({ to: account.address, value: GARAGE_FUNDING }),
+    const topUp = GARAGE_TARGET_BALANCE - balance;
+    await send(`fund ${garage.name} (+${formatEther(topUp)} MON)`, () =>
+      deployer.sendTransaction({ to: account.address, value: topUp }),
     );
   }
 

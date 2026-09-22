@@ -1,6 +1,20 @@
+import "dotenv/config";
+
 import type { HardhatUserConfig } from "hardhat/config";
 import { configVariable } from "hardhat/config";
 import hardhatToolboxViem from "@nomicfoundation/hardhat-toolbox-viem";
+
+/**
+ * The deployer key comes from `.env` when it is there, and from the encrypted
+ * Hardhat keystore otherwise. `.env` is gitignored and is the convenient option for
+ * a throwaway hackathon wallet; the keystore is the right one for anything else.
+ */
+const rawKey = process.env.MONAD_PRIVATE_KEY?.trim();
+
+const deployerKey = rawKey
+  ? // MetaMask copies the key without the 0x prefix; viem insists on it.
+    ((rawKey.startsWith("0x") ? rawKey : `0x${rawKey}`) as `0x${string}`)
+  : configVariable("MONAD_PRIVATE_KEY");
 
 const config: HardhatUserConfig = {
   plugins: [hardhatToolboxViem],
@@ -23,7 +37,7 @@ const config: HardhatUserConfig = {
       chainType: "l1",
       url: "https://testnet-rpc.monad.xyz",
       chainId: 10143,
-      accounts: [configVariable("MONAD_PRIVATE_KEY")],
+      accounts: [deployerKey],
     },
   },
 };
