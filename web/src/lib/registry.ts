@@ -3,7 +3,7 @@ import { keccak256, toBytes, type Abi } from "viem";
 import abi from "./contract/abi.json";
 import deployment from "./contract/deployment.json";
 
-export const registryAbi = abi as Abi;
+const registryAbi = abi as Abi;
 export const registryAddress = deployment.address as `0x${string}`;
 
 export const registry = {
@@ -82,10 +82,6 @@ export function dateToServiceDay(date: Date) {
   return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / (SECONDS_PER_DAY * 1000));
 }
 
-export function todayServiceDay() {
-  return dateToServiceDay(new Date());
-}
-
 /** Green above 80, amber to 50, red below. Matches the on-chain SVG. */
 export function scoreTone(score: number): RecordTone {
   if (score >= 80) return "good";
@@ -98,11 +94,4 @@ export const TONE_TEXT: Record<RecordTone, string> = {
   warn: "text-amber",
   bad: "text-danger",
   neutral: "text-violet-bright",
-};
-
-export const TONE_BORDER: Record<RecordTone, string> = {
-  good: "border-neon/40",
-  warn: "border-amber/40",
-  bad: "border-danger/40",
-  neutral: "border-violet/40",
 };

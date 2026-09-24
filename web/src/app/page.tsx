@@ -44,7 +44,7 @@ export default function HomePage() {
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted">
           Her araç bir dinamik NFT. Servis geçmişi doğduğu günden bugüne zincirde
           duruyor — sanayideki usta telefonundan giriyor, alıcı saniyeler içinde
-          görüyor.
+          görüyor. Raporu okuyan öder, geçmişi yazan usta kazanır.
         </p>
 
         <div className="mt-10">

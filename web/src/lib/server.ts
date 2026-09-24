@@ -7,7 +7,6 @@ import {
   normalizeVin,
   registry,
   vinToTokenId,
-  type VehicleRecord,
   type VehicleSummary,
 } from "./registry";
 
@@ -16,7 +15,7 @@ import {
  * lot has no wallet and no reason to install one - asking them to connect before
  * they can see a history would defeat the point of a public registry.
  */
-export const publicClient = createPublicClient({
+const publicClient = createPublicClient({
   chain: monadTestnet,
   // The public RPC allows 15 requests a second, and a vehicle page makes a read
   // per garage on top of the summary, records and token image. Multicall folds
@@ -88,70 +87,6 @@ export async function loadVehiclePreview(rawVin: string): Promise<VehiclePreview
     // The split always ends with the platform, so the rest are garages.
     garageCount: Math.max(split[0].length - 1, 0),
     garageShareBps: 10_000 - Number(platformShareBps),
-  };
-}
-
-export type VehicleDossier = {
-  vin: string;
-  tokenId: bigint;
-  summary: VehicleSummary;
-  records: VehicleRecord[];
-  garages: Map<string, Garage>;
-  image: string | null;
-};
-
-/** The full dossier. Used by tooling and tests, not by the public page. */
-export async function loadVehicle(rawVin: string): Promise<VehicleDossier | null> {
-  const vin = normalizeVin(rawVin);
-  if (vin.length !== 17) return null;
-
-  const tokenId = vinToTokenId(vin);
-
-  const [summary, records] = await Promise.all([
-    publicClient.readContract({
-      ...registry,
-      functionName: "getVehicleSummary",
-      args: [tokenId],
-    }) as Promise<VehicleSummary>,
-    publicClient.readContract({
-      ...registry,
-      functionName: "getRecords",
-      args: [tokenId],
-    }) as Promise<readonly VehicleRecord[]>,
-  ]);
-
-  if (!summary.registered) return null;
-
-  const reporters = [...new Set(records.map((record) => record.reporter))];
-
-  const [garageList, image] = await Promise.all([
-    Promise.all(
-      reporters.map(async (address) => {
-        const provider = (await publicClient.readContract({
-          ...registry,
-          functionName: "getServiceProvider",
-          args: [address],
-        })) as { name: string; recordCount: number; active: boolean };
-
-        return {
-          address,
-          name: provider.name || "Bilinmeyen servis",
-          recordCount: Number(provider.recordCount),
-          active: provider.active,
-        } satisfies Garage;
-      }),
-    ),
-    loadTokenImage(tokenId),
-  ]);
-
-  return {
-    vin,
-    tokenId,
-    summary,
-    // Newest first: a buyer reads the recent past before the distant one.
-    records: [...records].reverse(),
-    garages: new Map(garageList.map((garage) => [garage.address.toLowerCase(), garage])),
-    image,
   };
 }
 

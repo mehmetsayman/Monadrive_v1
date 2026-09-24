@@ -114,23 +114,27 @@ içinse cüzdanınızın yetkili servis olarak onaylanmış olması gerekiyor (a
 ## Mimari
 
 ```
-┌────────────────────────┐        ┌──────────────────────────┐
-│  Usta paneli (mobil)   │        │ Alıcı paneli (masaüstü)  │
-│  /report               │        │ /vehicle/[vin]           │
-│  wagmi · cüzdan gerekli│        │ sunucuda okuma · cüzdansız│
-└───────────┬────────────┘        └────────────┬─────────────┘
-            │ addRecordByVin()                 │ multicall3 ile
-            │ (imzalı işlem)                   │ tek eth_call
-            │                                  │
-      ┌─────▼──────────────────────────────────▼─────┐
-      │        VehicleRegistry.sol                   │
-      │   ERC-721 · Record[] · skor · servis yetkisi │
-      │   tokenId = keccak256(şasi no)               │
-      └──────────────────────┬───────────────────────┘
-                             │ ipfsCid
-                     ┌───────▼────────┐
-                     │  IPFS (Pinata) │  fotoğraf ve fatura
-                     └────────────────┘
+┌────────────────────────┐   ┌──────────────────────────────────────┐
+│  Usta paneli (mobil)   │   │      Alıcı paneli (masaüstü)         │
+│  /report               │   │      /vehicle/[vin]                  │
+│  wagmi · cüzdan gerekli│   ├──────────────────┬───────────────────┤
+│                        │   │ Önizleme         │ Tam rapor         │
+│                        │   │ sunucuda okunur  │ ödeme sonrası     │
+│                        │   │ cüzdansız        │ tarayıcıda okunur │
+└───────────┬────────────┘   └────────┬─────────┴─────────┬─────────┘
+            │ addRecordByVin()        │ getVehicleSummary │ purchaseReport()
+            │ withdrawEarnings()      │ reportSplit       │ getRecords()
+            │                         │ (multicall3)      │ erişim varsa
+      ┌─────▼─────────────────────────▼───────────────────▼─────┐
+      │               VehicleRegistry.sol                       │
+      │  ERC-721 · Record[] · skor · servis yetkisi             │
+      │  erişim hakkı · gelir bölüşümü                          │
+      │  tokenId = keccak256(şasi no)                           │
+      └──────────────────────────┬──────────────────────────────┘
+                                 │ ipfsCid
+                         ┌───────▼────────┐
+                         │  IPFS (Pinata) │  fotoğraf ve fatura
+                         └────────────────┘
 ```
 
 **Neden `tokenId = keccak256(şasi no)`:** Alıcı, zincir dışı hiçbir dizine
@@ -198,9 +202,15 @@ hassasiyet bu kadar ve struct'ın tek storage slotuna sığmasını sağlayan da
 recordedAt(5) + serviceDay(2) + mileage(4) + recordType(1) + reporter(20) = 32 bayt
 ```
 
-**Alıcı paneli cüzdan istemiyor.** Galeride araca bakan alıcının cüzdanı yok ve
-kurmak için sebebi de yok. Okumalar sunucuda yapılıyor; sayfa paylaşılabilir bir
-link.
+**Önizleme cüzdan istemiyor, rapor istiyor.** Galeride araca bakan alıcının
+cüzdanı yok; ona önce bir şey göstermek gerekiyor. Önizleme sunucuda okunuyor ve
+paylaşılabilir bir link olarak kalıyor. Cüzdan ve ödeme ancak raporu açmak
+istendiğinde devreye giriyor.
+
+**Kilitli yarı sunucuda hiç yüklenmiyor.** Kayıtlar, zincir o cüzdanın erişimi
+olduğunu söyledikten sonra tarayıcıda okunuyor. Sunucuda çekip CSS ile gizlemek,
+tüm raporu sayfa kaynağına koymak olurdu — kapı ancak görüntü kaynağında da
+kapalıysa kapıdır.
 
 **Usta paneli kilometre geri alımını formda yakalıyor.** Kontrat zaten
 reddedecek; panel aynı "hayır"a imza atmadan önce varıyor. Şasi numarası
