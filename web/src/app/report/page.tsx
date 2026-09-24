@@ -13,7 +13,7 @@ export const metadata = {
 export default function ReportPage() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pb-12 pt-6">
-      <header className="mb-8 flex items-center justify-between gap-4">
+      <header className="mb-8 flex items-center justify-between gap-3">
         <Brand />
         <WalletButton />
       </header>

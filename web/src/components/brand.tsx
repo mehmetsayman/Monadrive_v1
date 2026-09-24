@@ -13,9 +13,9 @@ export function Brand({
   return (
     <Link
       href={href}
-      className={cn("group inline-flex items-center gap-2.5", className)}
+      className={cn("group inline-flex min-w-0 items-center gap-2 sm:gap-2.5", className)}
     >
-      <svg viewBox="0 0 24 24" className="size-6" aria-hidden="true">
+      <svg viewBox="0 0 24 24" className="size-6 shrink-0" aria-hidden="true">
         <path
           d="M4 20 L12 3 L20 20 L12 15 Z"
           fill="none"
@@ -25,7 +25,7 @@ export function Brand({
         />
         <path d="M12 15 L12 3" stroke="var(--color-neon)" strokeWidth="1.6" />
       </svg>
-      <span className="text-[0.95rem] font-semibold tracking-[0.18em] text-bright">
+      <span className="whitespace-nowrap text-[0.95rem] font-semibold tracking-[0.18em] text-bright">
         MONAD<span className="text-violet-bright">DRIVE</span>
       </span>
     </Link>

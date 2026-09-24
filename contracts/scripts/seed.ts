@@ -38,7 +38,7 @@ const garageKey = (label: string): Hex =>
 
 const GARAGES = [
   { label: "ahmet", name: "Ahmet Usta Oto Servis" },
-  { label: "yetkili", name: "Yetkili Servis Kadikoy" },
+  { label: "yetkili", name: "Yetkili Servis Kadıköy" },
   { label: "ekspertiz", name: "TrustPoint Ekspertiz" },
 ] as const;
 
@@ -75,55 +75,55 @@ const VEHICLES: Array<{
 }> = [
   {
     vin: "WVWZZZ1JZXW000001",
-    label: "Bakimli, kazasiz",
+    label: "Bakımlı, kazasız",
     genesis: {
       by: 2,
       on: "2019-03-14",
       mileage: 12_000,
       type: RecordType.Inspection,
-      note: "Sicile ilk kayit - ekspertiz temiz",
+      note: "Sicile ilk kayıt — ekspertiz temiz çıktı",
     },
     history: [
-      { by: 0, on: "2019-11-02", mileage: 25_400, type: RecordType.Maintenance, note: "Periyodik bakim, yag ve filtre" },
-      { by: 1, on: "2020-08-21", mileage: 41_800, type: RecordType.Maintenance, note: "40.000 km bakimi" },
-      { by: 2, on: "2021-06-09", mileage: 56_200, type: RecordType.Inspection, note: "Yillik muayene - gecti" },
-      { by: 0, on: "2022-10-17", mileage: 72_900, type: RecordType.PartReplacement, note: "On fren balatasi" },
-      { by: 0, on: "2024-04-25", mileage: 88_100, type: RecordType.Maintenance, note: "Periyodik bakim" },
+      { by: 0, on: "2019-11-02", mileage: 25_400, type: RecordType.Maintenance, note: "Yağ, yağ filtresi ve polen filtresi değişimi" },
+      { by: 1, on: "2020-08-21", mileage: 41_800, type: RecordType.Maintenance, note: "40.000 km periyodik bakımı" },
+      { by: 2, on: "2021-06-09", mileage: 56_200, type: RecordType.Inspection, note: "Yıllık muayene — ağır kusur yok" },
+      { by: 0, on: "2022-10-17", mileage: 72_900, type: RecordType.PartReplacement, note: "Ön fren balatası ve disk değişimi" },
+      { by: 0, on: "2024-04-25", mileage: 88_100, type: RecordType.Maintenance, note: "Yağ değişimi ve genel kontrol" },
     ],
   },
   {
     vin: "NM0GE9F79E1234567",
-    label: "Hafif kazali",
+    label: "Hafif kazalı",
     genesis: {
       by: 2,
       on: "2018-05-30",
       mileage: 30_000,
       type: RecordType.Inspection,
-      note: "Sicile ilk kayit",
+      note: "Sicile ilk kayıt",
     },
     history: [
-      { by: 0, on: "2019-09-12", mileage: 61_500, type: RecordType.Maintenance, note: "Periyodik bakim" },
-      { by: 1, on: "2021-02-08", mileage: 88_300, type: RecordType.Accident, note: "Arka tampon carpma - hafif" },
-      { by: 1, on: "2021-02-19", mileage: 89_000, type: RecordType.Repair, note: "Arka tampon degisimi ve boya" },
-      { by: 0, on: "2023-07-04", mileage: 118_700, type: RecordType.Maintenance, note: "Periyodik bakim" },
-      { by: 2, on: "2025-05-16", mileage: 131_200, type: RecordType.Inspection, note: "Yillik muayene - gecti" },
+      { by: 0, on: "2019-09-12", mileage: 61_500, type: RecordType.Maintenance, note: "Yağ ve filtre değişimi" },
+      { by: 1, on: "2021-02-08", mileage: 88_300, type: RecordType.Accident, note: "Arka tamponda çarpma — hafif hasar" },
+      { by: 1, on: "2021-02-19", mileage: 89_000, type: RecordType.Repair, note: "Arka tampon değişimi ve boya" },
+      { by: 0, on: "2023-07-04", mileage: 118_700, type: RecordType.Maintenance, note: "Triger seti ve devirdaim değişimi" },
+      { by: 2, on: "2025-05-16", mileage: 131_200, type: RecordType.Inspection, note: "Yıllık muayene — ağır kusur yok" },
     ],
   },
   {
     vin: "1HGBH41JXMN109186",
-    label: "Agir hasar kayitli",
+    label: "Ağır hasar kayıtlı",
     genesis: {
       by: 2,
       on: "2017-09-22",
       mileage: 50_000,
       type: RecordType.Inspection,
-      note: "Sicile ilk kayit",
+      note: "Sicile ilk kayıt",
     },
     history: [
-      { by: 1, on: "2019-01-27", mileage: 71_400, type: RecordType.Accident, note: "Yan carpma - kapi ve marspiyel" },
-      { by: 1, on: "2020-11-30", mileage: 96_800, type: RecordType.HeavyDamage, note: "On sasi deformasyonu tespit edildi" },
-      { by: 1, on: "2020-12-15", mileage: 99_200, type: RecordType.Repair, note: "Sasi duzeltme ve kaynak" },
-      { by: 0, on: "2024-08-09", mileage: 142_500, type: RecordType.Maintenance, note: "Periyodik bakim" },
+      { by: 1, on: "2019-01-27", mileage: 71_400, type: RecordType.Accident, note: "Yan çarpma — sol ön kapı ve marşpiyel" },
+      { by: 1, on: "2020-11-30", mileage: 96_800, type: RecordType.HeavyDamage, note: "Ön şasi deformasyonu tespit edildi" },
+      { by: 1, on: "2020-12-15", mileage: 99_200, type: RecordType.Repair, note: "Şasi düzeltme ve kaynak işlemi" },
+      { by: 0, on: "2024-08-09", mileage: 142_500, type: RecordType.Maintenance, note: "Yağ değişimi ve fren kontrolü" },
     ],
   },
 ];

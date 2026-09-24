@@ -22,7 +22,7 @@ export function WalletButton({ className }: { className?: string }) {
         disabled={isPending || !injected}
         onClick={() => injected && connect({ connector: injected })}
         className={cn(
-          "inline-flex items-center gap-2 rounded-full border border-violet/40 bg-violet/15 px-5 py-2.5",
+          "inline-flex shrink-0 items-center gap-2 rounded-full border border-violet/40 bg-violet/15 px-4 py-2.5 sm:px-5",
           "text-sm font-medium text-bright transition",
           "hover:border-violet hover:bg-violet/25 disabled:opacity-50",
           className,
@@ -41,7 +41,7 @@ export function WalletButton({ className }: { className?: string }) {
         disabled={isSwitching}
         onClick={() => switchChain({ chainId: monadTestnet.id })}
         className={cn(
-          "inline-flex items-center gap-2 rounded-full border border-amber/50 bg-amber/15 px-5 py-2.5",
+          "inline-flex shrink-0 items-center gap-2 rounded-full border border-amber/50 bg-amber/15 px-4 py-2.5 sm:px-5",
           "text-sm font-medium text-amber transition hover:bg-amber/25 disabled:opacity-50",
           className,
         )}
@@ -55,7 +55,7 @@ export function WalletButton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-3 rounded-full border border-violet/25 bg-ink/60 py-1.5 pl-4 pr-1.5",
+        "inline-flex shrink-0 items-center gap-3 rounded-full border border-violet/25 bg-ink/60 py-1.5 pl-4 pr-1.5",
         className,
       )}
     >
