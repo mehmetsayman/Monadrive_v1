@@ -17,6 +17,7 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import { network } from "hardhat";
 import artifact from "../artifacts/contracts/VehicleRegistry.sol/VehicleRegistry.json" with { type: "json" };
+import { sendResilient, waitForBalance, warmUp } from "./rpc.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -149,9 +150,12 @@ const abi = artifact.abi;
 const timings: number[] = [];
 
 /** Sends a write, waits for it to land, and records how long that took. */
-async function send(label: string, submit: () => Promise<Hex>) {
+async function send(
+  label: string,
+  submit: (overrides: { maxPriorityFeePerGas?: bigint }) => Promise<Hex>,
+) {
   const startedAt = Date.now();
-  const hash = await submit();
+  const hash = await sendResilient(submit);
   const receipt = await publicClient.waitForTransactionReceipt({ hash });
   const elapsed = Date.now() - startedAt;
   timings.push(elapsed);
@@ -185,17 +189,25 @@ for (const garage of GARAGES) {
   const balance = await publicClient.getBalance({ address: account.address });
   if (balance < GARAGE_MIN_BALANCE) {
     const topUp = GARAGE_TARGET_BALANCE - balance;
-    await send(`fund ${garage.name} (+${formatEther(topUp)} MON)`, () =>
-      deployer.sendTransaction({ to: account.address, value: topUp }),
+    await send(`fund ${garage.name} (+${formatEther(topUp)} MON)`, (overrides) =>
+      deployer.sendTransaction({ to: account.address, value: topUp, ...overrides }),
     );
+
+    // The receipt is not enough; wait until the RPC agrees the money is there.
+    await waitForBalance(publicClient, account.address, GARAGE_MIN_BALANCE);
+  }
+
+  // A never-used account's first contract call is refused. See scripts/rpc.ts.
+  if (await warmUp(publicClient, wallet)) {
+    console.log(`  --       -- ms  ${garage.name} hesabı ısıtıldı`);
   }
 
   const alreadyActive = (await asOwner.read.isServiceProvider([account.address])) as boolean;
   if (alreadyActive) {
     console.log(`  --       0 ms  ${garage.name} already approved`);
   } else {
-    await send(`approve ${garage.name}`, () =>
-      asOwner.write.setServiceProvider([account.address, garage.name, true]),
+    await send(`approve ${garage.name}`, (overrides) =>
+      asOwner.write.setServiceProvider([account.address, garage.name, true], overrides),
     );
   }
 
@@ -216,7 +228,7 @@ for (const vehicle of VEHICLES) {
   }
 
   const genesisGarage = registryFor(garageWallets[vehicle.genesis.by]);
-  await send(`register @ ${vehicle.genesis.mileage.toLocaleString("tr-TR")} km  (${vehicle.genesis.on})`, () =>
+  await send(`register @ ${vehicle.genesis.mileage.toLocaleString("tr-TR")} km  (${vehicle.genesis.on})`, (overrides) =>
     genesisGarage.write.registerVehicle([
       vehicle.vin,
       vehicle.genesis.mileage,
@@ -224,12 +236,12 @@ for (const vehicle of VEHICLES) {
       deployer.account.address,
       "",
       vehicle.genesis.note,
-    ]),
+    ], overrides),
   );
 
   for (const step of vehicle.history) {
     const garage = registryFor(garageWallets[step.by]);
-    await send(`${step.on}  ${step.mileage.toLocaleString("tr-TR")} km  ${step.note}`, () =>
+    await send(`${step.on}  ${step.mileage.toLocaleString("tr-TR")} km  ${step.note}`, (overrides) =>
       garage.write.addRecordByVin([
         vehicle.vin,
         step.mileage,
