@@ -111,6 +111,20 @@ const VEHICLES: Array<{
     ],
   },
   {
+    // Deliberately almost empty. A garage's first record on this car makes it
+    // half the history, so a sale afterwards pays a share worth pointing at.
+    vin: "TMBJJ7NE0J0123456",
+    label: "Sicile yeni girmiş",
+    genesis: {
+      by: 2,
+      on: "2023-06-15",
+      mileage: 18_000,
+      type: RecordType.Inspection,
+      note: "Sicile ilk kayıt — ekspertiz temiz çıktı",
+    },
+    history: [],
+  },
+  {
     vin: "1HGBH41JXMN109186",
     label: "Ağır hasar kayıtlı",
     genesis: {

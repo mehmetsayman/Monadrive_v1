@@ -10,15 +10,25 @@ Sırayı bozmayın. Her parça bir öncekinin kurduğu beklentiyi kullanıyor.
 ## Hazırlık (kayda başlamadan önce)
 
 - [ ] `npm run dev` çalışıyor, `http://localhost:3000` açık
-- [ ] MetaMask **Monad Testnet**'te
-- [ ] **İki cüzdan hazır:** biri yetkili servis (usta), biri alıcı. Alıcı
-      cüzdanında en az 0.1 MON olsun ve **o araç için raporu daha önce
-      satın almamış olsun** — yoksa ödeme ekranı hiç görünmez
+- [ ] MetaMask **Monad Testnet**'te, üç hesap da ekli:
+
+  | Rol | Adres | Ne yapar |
+  |---|---|---|
+  | platform | `0x1c6e…b944` | %30 payı alır |
+  | usta | `0xd3a9…B0d5` | kayıt girer, kazancını görür |
+  | müşteri | `0x5992…9E24` | raporu satın alır |
+
+- [ ] **Her hesap en az bir işlem göndermiş olmalı.** Hiç göndermemişse MetaMask'te
+      o hesaba geçip kendine 0 MON gönderin — Monad RPC'si aksi halde ilk kontrat
+      çağrısını reddeder
+- [ ] Müşteri hesabı gösterilecek araç için raporu **daha önce almamış olsun**,
+      yoksa ödeme ekranı hiç görünmez
 - [ ] Tarayıcı sekmeleri kapalı, bildirimler susturulmuş
 - [ ] Telefon ekranı kaydı için `/report` açık (ikinci cihaz veya responsive mod)
-- [ ] Şu üç şasi numarası panoda hazır:
+- [ ] Şu şasi numaraları panoda hazır:
   - `WVWZZZ1JZXW000001` (temiz)
   - `1HGBH41JXMN109186` (ağır hasarlı)
+  - `TMBJJ7NE0J0123456` (sicile yeni girmiş — usta buraya kayıt girecek)
 
 ---
 
@@ -78,7 +88,7 @@ Kilitli ekrandaki **paylaşım satırını** hatırlatın.
 
 ## 0:58 – 1:16 · Usta kaydı giriyor
 
-**Ekran:** Telefon, `/report`.
+**Ekran:** Telefon, `/report`. **MetaMask'te usta hesabına geçin.**
 
 > "Peki bu kayıtlar oraya nasıl giriyor? Sanayideki usta, işi bitirdiğinde
 > telefonundan. Ve bakın burada ne var —"
@@ -88,7 +98,8 @@ Kilitli ekrandaki **paylaşım satırını** hatırlatın.
 > "Az önce ödediğim paranın payı buraya düştü. Usta yazdıkça kazanıyor. 'Neden
 > uğraşsın ki' sorusunun cevabı bu."
 
-Şasi numarasını yazın — **zincirden gelen son kilometrenin belirdiğini gösterin.**
+`TMBJJ7NE0J0123456` yazın — **zincirden gelen son kilometrenin belirdiğini
+gösterin.** Bu araç sicile yeni girmiş, geçmişini yazmaya usta başlıyor.
 
 > "Şasi numarasını yazdığım anda zincirdeki son kilometreyi okuyor."
 

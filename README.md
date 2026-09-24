@@ -94,7 +94,7 @@ Mobil odaklı, tek kolon, tek buton. Sanayide tek elle tutulan bir telefon için
 | **Explorer** | [testnet.monadexplorer.com](https://testnet.monadexplorer.com) |
 | **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x530ae2809c0828ea55a4a407903c4f9d0172de30) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
 
-Zincirde şu an üç demo aracı ve 17 gerçek kayıt duruyor.
+Zincirde şu an dört demo aracı ve 18 gerçek kayıt duruyor.
 
 ## Deneyin
 
@@ -105,6 +105,7 @@ Zincirde şu an üç demo aracı ve 17 gerçek kayıt duruyor.
 | `WVWZZZ1JZXW000001` | Bakımlı, kazasız — skor **100**, 6 kayıt |
 | `NM0GE9F79E1234567` | Hafif kazalı — skor **86**, 1 kaza |
 | `1HGBH41JXMN109186` | Ağır hasarlı — skor **53**, 2 kaza, şasi deformasyonu |
+| `TMBJJ7NE0J0123456` | Sicile yeni girmiş — tek kayıt, geçmişi henüz oluşuyor |
 | başka bir şey | Sicilde olmayan araç ekranı |
 
 Tam raporu açmak için cüzdan bağlayıp 0.05 MON ödemeniz gerekiyor. Kayıt girmek
