@@ -7,3 +7,6 @@ types/
 .next/
 out/
 *.log
+
+# Local demo wiring: which of your wallets plays which role.
+contracts/deployments/roles.*.json

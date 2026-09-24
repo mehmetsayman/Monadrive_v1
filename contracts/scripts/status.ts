@@ -70,6 +70,22 @@ const rows: Array<{ role: string; address: Hex; earnings: bigint }> = [];
 const ownerEarnings = await read<bigint>("earnings", [deployment.owner]);
 rows.push({ role: "platform", address: deployment.owner, earnings: ownerEarnings });
 
+// The MetaMask accounts `npm run roles` set up, when it has been run.
+try {
+  const roles = JSON.parse(
+    readFileSync(join(HERE, "..", "deployments", `roles.${networkName}.json`), "utf8"),
+  ) as { usta: Hex; musteri: Hex };
+
+  rows.push({ role: "usta", address: roles.usta, earnings: await read<bigint>("earnings", [roles.usta]) });
+  rows.push({
+    role: "müşteri",
+    address: roles.musteri,
+    earnings: await read<bigint>("earnings", [roles.musteri]),
+  });
+} catch {
+  // roles never set up on this network; the seeded garages below are the cast.
+}
+
 for (const garage of GARAGES) {
   const address = privateKeyToAccount(garageKey(garage.label)).address;
   rows.push({

@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -139,6 +139,16 @@ for (const [label, address] of [
 ] as const) {
   if ((await publicClient.getTransactionCount({ address })) === 0) cold.push(label);
 }
+
+// Remember the cast, so `npm run status` can report on these accounts too.
+writeFileSync(
+  join(HERE, "..", "deployments", `roles.${networkName}.json`),
+  `${JSON.stringify(
+    { platform: deployer.account.address, usta, ustaAdi: USTA_ADI, musteri },
+    null,
+    2,
+  )}\n`,
+);
 
 console.log("\nHAZIR.");
 console.log(`  usta     ${usta}  -> /report, kayıt girer, kazancını görür`);
