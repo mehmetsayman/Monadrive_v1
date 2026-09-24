@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { describe, it, beforeEach } from "node:test";
 
-import { toFunctionSelector } from "viem";
+import { parseEther, toFunctionSelector } from "viem";
 
 import { network } from "hardhat";
 
@@ -28,6 +28,10 @@ const ERROR_SIGNATURES = {
   VehicleNotFound: "VehicleNotFound(uint256)",
   VehicleAlreadyRegistered: "VehicleAlreadyRegistered(uint256)",
   EmptyVin: "EmptyVin()",
+  InsufficientPayment: "InsufficientPayment(uint256,uint256)",
+  AlreadyPurchased: "AlreadyPurchased(uint256,address)",
+  NothingToWithdraw: "NothingToWithdraw(address)",
+  ShareOutOfRange: "ShareOutOfRange(uint16)",
   FutureServiceDate: "FutureServiceDate(uint16,uint16)",
   OwnableUnauthorizedAccount: "OwnableUnauthorizedAccount(address)",
 } as const;
@@ -60,17 +64,25 @@ describe("VehicleRegistry", async () => {
   let garage: Awaited<ReturnType<typeof deploy>>["garage"];
   let stranger: Awaited<ReturnType<typeof deploy>>["stranger"];
   let carOwner: Awaited<ReturnType<typeof deploy>>["carOwner"];
+  let buyer: Awaited<ReturnType<typeof deploy>>["buyer"];
+  let garage2: Awaited<ReturnType<typeof deploy>>["garage2"];
+
+  const PRICE = parseEther("0.05");
+  const PLATFORM_BPS = 3_000; // 30% platform, 70% to the garages
 
   async function deploy() {
-    const [deployer, garage, stranger, carOwner] = await viem.getWalletClients();
+    const [deployer, garage, stranger, carOwner, buyer, garage2] =
+      await viem.getWalletClients();
     const registry = await viem.deployContract("VehicleRegistry", [
       deployer.account.address,
+      PRICE,
+      PLATFORM_BPS,
     ]);
-    return { registry, deployer, garage, stranger, carOwner };
+    return { registry, deployer, garage, stranger, carOwner, buyer, garage2 };
   }
 
   beforeEach(async () => {
-    ({ registry, deployer, garage, stranger, carOwner } = await deploy());
+    ({ registry, deployer, garage, stranger, carOwner, buyer, garage2 } = await deploy());
     await registry.write.setServiceProvider([
       garage.account.address,
       "Ahmet Oto Servis",
@@ -372,6 +384,203 @@ describe("VehicleRegistry", async () => {
     it("names the garage behind a record", async () => {
       const tokenId = await register(10_000);
       assert.equal(await registry.read.reporterName([tokenId, 0n]), "Ahmet Oto Servis");
+    });
+  });
+
+  describe("paid reports", () => {
+    /** Adds a second approved garage and gives it one record on VIN. */
+    async function addSecondGarage(mileage: number) {
+      await registry.write.setServiceProvider([
+        garage2.account.address,
+        "Yetkili Servis",
+        true,
+      ]);
+      await registry.write.addRecordByVin(
+        [VIN, mileage, 0, RecordType.Maintenance, "", ""],
+        { account: garage2.account },
+      );
+    }
+
+    it("locks the full report until it is bought", async () => {
+      const tokenId = await register(10_000);
+      assert.equal(
+        await registry.read.hasReportAccess([tokenId, buyer.account.address]),
+        false,
+      );
+    });
+
+    it("opens the report permanently once bought", async () => {
+      const tokenId = await register(10_000);
+
+      await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE,
+      });
+
+      assert.equal(
+        await registry.read.hasReportAccess([tokenId, buyer.account.address]),
+        true,
+      );
+    });
+
+    it("refuses to charge the same buyer twice for the same car", async () => {
+      const tokenId = await register(10_000);
+      await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE,
+      });
+
+      await expectRevert(
+        registry.write.purchaseReport([tokenId], {
+          account: buyer.account,
+          value: PRICE,
+        }),
+        "AlreadyPurchased",
+      );
+    });
+
+    it("rejects underpayment", async () => {
+      const tokenId = await register(10_000);
+      await expectRevert(
+        registry.write.purchaseReport([tokenId], {
+          account: buyer.account,
+          value: PRICE - 1n,
+        }),
+        "InsufficientPayment",
+      );
+    });
+
+    it("refunds overpayment instead of keeping it", async () => {
+      const tokenId = await register(10_000);
+      const publicClient = await viem.getPublicClient();
+
+      const before = await publicClient.getBalance({ address: buyer.account.address });
+      const hash = await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE * 3n,
+      });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const after = await publicClient.getBalance({ address: buyer.account.address });
+
+      const gas = receipt.gasUsed * receipt.effectiveGasPrice;
+      assert.equal(before - after - gas, PRICE, "buyer was charged more than the price");
+    });
+
+    it("gives the vehicle's own owner the report for free", async () => {
+      const tokenId = await register(10_000);
+      assert.equal(
+        await registry.read.hasReportAccess([tokenId, carOwner.account.address]),
+        true,
+      );
+    });
+
+    it("gives an approved garage the report for free", async () => {
+      const tokenId = await register(10_000);
+      assert.equal(
+        await registry.read.hasReportAccess([tokenId, garage.account.address]),
+        true,
+      );
+    });
+
+    it("splits a sale between the platform and the garages that wrote the history", async () => {
+      const tokenId = await register(10_000);
+      await addSecondGarage(20_000); // now: garage 1 record, garage2 1 record
+
+      await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE,
+      });
+
+      const platformCut = (PRICE * BigInt(PLATFORM_BPS)) / 10_000n;
+      const garagePool = PRICE - platformCut;
+
+      const one = await registry.read.earnings([garage.account.address]);
+      const two = await registry.read.earnings([garage2.account.address]);
+      const platform = await registry.read.earnings([deployer.account.address]);
+
+      assert.equal(one, garagePool / 2n, "first garage's share is wrong");
+      assert.equal(two, garagePool / 2n, "second garage's share is wrong");
+      assert.equal(platform, platformCut, "platform cut is wrong");
+      assert.equal(one + two + platform, PRICE, "the split does not add up to the price");
+    });
+
+    it("weights the split by how much of the history each garage wrote", async () => {
+      const tokenId = await register(10_000);
+      // garage now has 1 record; give it two more, then garage2 one.
+      await registry.write.addRecordByVin(
+        [VIN, 20_000, 0, RecordType.Maintenance, "", ""],
+        { account: garage.account },
+      );
+      await registry.write.addRecordByVin(
+        [VIN, 30_000, 0, RecordType.Maintenance, "", ""],
+        { account: garage.account },
+      );
+      await addSecondGarage(40_000); // 3 vs 1, out of 4 records
+
+      await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE,
+      });
+
+      const one = await registry.read.earnings([garage.account.address]);
+      const two = await registry.read.earnings([garage2.account.address]);
+
+      assert.equal(one, two * 3n, "shares should follow the record counts");
+    });
+
+    it("pays out on withdrawal and leaves the balance at zero", async () => {
+      const tokenId = await register(10_000);
+      await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE,
+      });
+
+      const publicClient = await viem.getPublicClient();
+      const owed = await registry.read.earnings([garage.account.address]);
+      assert.ok(owed > 0n, "the garage should be owed something");
+
+      const before = await publicClient.getBalance({ address: garage.account.address });
+      const hash = await registry.write.withdrawEarnings({ account: garage.account });
+      const receipt = await publicClient.waitForTransactionReceipt({ hash });
+      const after = await publicClient.getBalance({ address: garage.account.address });
+
+      const gas = receipt.gasUsed * receipt.effectiveGasPrice;
+      assert.equal(after - before + gas, owed, "payout did not match the balance");
+      assert.equal(await registry.read.earnings([garage.account.address]), 0n);
+    });
+
+    it("refuses a withdrawal with nothing owed", async () => {
+      await expectRevert(
+        registry.write.withdrawEarnings({ account: stranger.account }),
+        "NothingToWithdraw",
+      );
+    });
+
+    it("lets only the owner move the price", async () => {
+      await expectRevert(
+        registry.write.setReportPrice([parseEther("1")], { account: stranger.account }),
+        "OwnableUnauthorizedAccount",
+      );
+
+      await registry.write.setReportPrice([parseEther("0.1")]);
+      assert.equal(await registry.read.reportPrice(), parseEther("0.1"));
+    });
+
+    it("refuses a platform share above 100%", async () => {
+      await expectRevert(registry.write.setPlatformShare([10_001]), "ShareOutOfRange");
+    });
+
+    it("previews the split without anyone paying", async () => {
+      const tokenId = await register(10_000);
+      await addSecondGarage(20_000);
+
+      const [beneficiaries, amounts] = await registry.read.reportSplit([tokenId]);
+
+      assert.equal(beneficiaries.length, 3, "two garages plus the platform");
+      assert.equal(
+        amounts.reduce((total: bigint, amount: bigint) => total + amount, 0n),
+        PRICE,
+      );
     });
   });
 

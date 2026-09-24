@@ -24,8 +24,30 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
     uint16 public constant MAX_CARE_BONUS = 10;
     uint8 public constant BASE_SCORE = 100;
 
+    uint16 private constant BPS = 10_000;
+
     mapping(uint256 tokenId => Vehicle) private _vehicles;
     mapping(uint256 tokenId => Record[]) private _records;
+
+    /// @notice What a buyer pays to open one vehicle's full report, in wei.
+    uint256 public reportPrice;
+
+    /// @notice The platform's cut of each sale, in basis points. The rest is split
+    ///         between the garages that wrote that vehicle's history.
+    uint16 public platformShareBps;
+
+    /// @dev Access is per vehicle and permanent: a buyer walking a lot should not
+    ///      pay twice for the same car because they opened the page again.
+    mapping(uint256 tokenId => mapping(address buyer => bool)) private _access;
+
+    /// @dev Pull payments. Crediting a balance here and letting each beneficiary
+    ///      withdraw keeps one failing recipient from blocking a sale.
+    mapping(address beneficiary => uint256) public earnings;
+
+    /// @dev Who wrote how much of a given vehicle's history, so a sale can be split
+    ///      without walking the whole record array.
+    mapping(uint256 tokenId => address[]) private _vehicleReporters;
+    mapping(uint256 tokenId => mapping(address reporter => uint32)) private _reporterRecords;
 
     /// @notice Everything the buyer panel needs, in one call.
     struct VehicleSummary {
@@ -39,7 +61,16 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
         uint40 lastUpdatedAt;
     }
 
-    constructor(address initialOwner) ERC721("MonadDrive Vehicle", "MDV") Ownable(initialOwner) {}
+    constructor(address initialOwner, uint256 initialPrice, uint16 initialPlatformShareBps)
+        ERC721("MonadDrive Vehicle", "MDV")
+        Ownable(initialOwner)
+    {
+        if (initialPlatformShareBps > BPS) revert ShareOutOfRange(initialPlatformShareBps);
+        reportPrice = initialPrice;
+        platformShareBps = initialPlatformShareBps;
+        emit ReportPriceSet(initialPrice);
+        emit PlatformShareSet(initialPlatformShareBps);
+    }
 
     // -------------------------------------------------------------------------
     // VIN <-> token id
@@ -163,6 +194,14 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
             })
         );
 
+        // Track authorship per vehicle so a later sale can be split pro rata.
+        if (_reporterRecords[tokenId][msg.sender] == 0) {
+            _vehicleReporters[tokenId].push(msg.sender);
+        }
+        unchecked {
+            _reporterRecords[tokenId][msg.sender] += 1;
+        }
+
         _creditServiceProvider(msg.sender);
 
         emit RecordAdded(tokenId, msg.sender, index, recordType, mileage, serviceDay, ipfsCid);
@@ -180,6 +219,131 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
         if (recordType == RecordType.Accident) return (15, 0, true);
         if (recordType == RecordType.HeavyDamage) return (30, 0, true);
         revert InvalidRecordType(uint8(recordType));
+    }
+
+    // -------------------------------------------------------------------------
+    // Paid reports
+    //
+    // Note on what is and is not being sold. The records live in public storage on
+    // a public chain, so anyone willing to call the contract directly can read
+    // them. What a buyer pays for is the report - the compiled, readable, sourced
+    // view of a vehicle's life - not secrecy. The paywall is a product boundary,
+    // and the contract is honest about that rather than pretending otherwise.
+    //
+    // The split is the point: the garages that wrote a vehicle's history earn
+    // every time someone reads it. That is the answer to "why would a mechanic
+    // bother typing this in?"
+    // -------------------------------------------------------------------------
+
+    /// @notice Buy permanent access to one vehicle's full report.
+    /// @dev Overpayment is refunded rather than kept.
+    function purchaseReport(uint256 tokenId) external payable {
+        Vehicle storage v = _vehicles[tokenId];
+        if (!v.registered) revert VehicleNotFound(tokenId);
+        if (hasReportAccess(tokenId, msg.sender)) revert AlreadyPurchased(tokenId, msg.sender);
+
+        uint256 price = reportPrice;
+        if (msg.value < price) revert InsufficientPayment(price, msg.value);
+
+        _access[tokenId][msg.sender] = true;
+
+        uint256 platformCut = (price * platformShareBps) / BPS;
+        uint256 garagePool = price - platformCut;
+        uint256 distributed;
+
+        address[] storage reporters = _vehicleReporters[tokenId];
+        uint32 totalRecords = v.recordCount;
+
+        for (uint256 i; i < reporters.length; ++i) {
+            address reporter = reporters[i];
+            uint256 share = (garagePool * _reporterRecords[tokenId][reporter]) / totalRecords;
+            if (share == 0) continue;
+
+            earnings[reporter] += share;
+            distributed += share;
+            emit EarningsAccrued(reporter, tokenId, share);
+        }
+
+        // Rounding dust, and the whole pool if a vehicle somehow has no reporters.
+        uint256 platformTotal = platformCut + (garagePool - distributed);
+        earnings[owner()] += platformTotal;
+        emit EarningsAccrued(owner(), tokenId, platformTotal);
+
+        emit ReportPurchased(tokenId, msg.sender, price);
+
+        uint256 excess = msg.value - price;
+        if (excess > 0) {
+            (bool refunded,) = msg.sender.call{value: excess}("");
+            if (!refunded) revert PayoutFailed(msg.sender, excess);
+        }
+    }
+
+    /// @notice Withdraw everything credited to the caller.
+    function withdrawEarnings() external {
+        uint256 amount = earnings[msg.sender];
+        if (amount == 0) revert NothingToWithdraw(msg.sender);
+
+        earnings[msg.sender] = 0;
+
+        (bool sent,) = msg.sender.call{value: amount}("");
+        if (!sent) revert PayoutFailed(msg.sender, amount);
+
+        emit EarningsWithdrawn(msg.sender, amount);
+    }
+
+    /// @notice Whether `viewer` may open the full report for `tokenId`.
+    /// @dev Free for the car's own owner, and for approved garages, who need to see
+    ///      a vehicle's history before they work on it.
+    function hasReportAccess(uint256 tokenId, address viewer) public view returns (bool) {
+        if (viewer == address(0)) return false;
+        if (_access[tokenId][viewer]) return true;
+        if (_ownerOf(tokenId) == viewer) return true;
+        return isServiceProvider(viewer);
+    }
+
+    function hasReportAccessByVin(string calldata vin, address viewer) external view returns (bool) {
+        return hasReportAccess(vinToTokenId(vin), viewer);
+    }
+
+    /// @notice How a sale of this vehicle's report would be split right now.
+    function reportSplit(uint256 tokenId)
+        external
+        view
+        returns (address[] memory beneficiaries, uint256[] memory amounts)
+    {
+        address[] storage reporters = _vehicleReporters[tokenId];
+        uint32 totalRecords = _vehicles[tokenId].recordCount;
+
+        beneficiaries = new address[](reporters.length + 1);
+        amounts = new uint256[](reporters.length + 1);
+
+        uint256 price = reportPrice;
+        uint256 platformCut = (price * platformShareBps) / BPS;
+        uint256 garagePool = price - platformCut;
+        uint256 distributed;
+
+        for (uint256 i; i < reporters.length; ++i) {
+            uint256 share = totalRecords == 0
+                ? 0
+                : (garagePool * _reporterRecords[tokenId][reporters[i]]) / totalRecords;
+            beneficiaries[i] = reporters[i];
+            amounts[i] = share;
+            distributed += share;
+        }
+
+        beneficiaries[reporters.length] = owner();
+        amounts[reporters.length] = platformCut + (garagePool - distributed);
+    }
+
+    function setReportPrice(uint256 newPrice) external onlyOwner {
+        reportPrice = newPrice;
+        emit ReportPriceSet(newPrice);
+    }
+
+    function setPlatformShare(uint16 bps) external onlyOwner {
+        if (bps > BPS) revert ShareOutOfRange(bps);
+        platformShareBps = bps;
+        emit PlatformShareSet(bps);
     }
 
     // -------------------------------------------------------------------------

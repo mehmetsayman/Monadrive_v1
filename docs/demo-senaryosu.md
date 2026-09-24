@@ -10,8 +10,10 @@ Sırayı bozmayın. Her parça bir öncekinin kurduğu beklentiyi kullanıyor.
 ## Hazırlık (kayda başlamadan önce)
 
 - [ ] `npm run dev` çalışıyor, `http://localhost:3000` açık
-- [ ] MetaMask **Monad Testnet**'te ve yetkili servis cüzdanıyla bağlı
-- [ ] Cüzdanda en az 0.2 MON var
+- [ ] MetaMask **Monad Testnet**'te
+- [ ] **İki cüzdan hazır:** biri yetkili servis (usta), biri alıcı. Alıcı
+      cüzdanında en az 0.1 MON olsun ve **o araç için raporu daha önce
+      satın almamış olsun** — yoksa ödeme ekranı hiç görünmez
 - [ ] Tarayıcı sekmeleri kapalı, bildirimler susturulmuş
 - [ ] Telefon ekranı kaydı için `/report` açık (ikinci cihaz veya responsive mod)
 - [ ] Şu üç şasi numarası panoda hazır:
@@ -37,44 +39,54 @@ duymadan önce sorunu tanısın.
 
 **Ekran:** `WVWZZZ1JZXW000001` yazın, Sorgula.
 
-> "Şasi numarasını giriyorum. Cüzdan yok, kayıt yok, izin yok — bu herkese açık
-> bir sicil."
+> "Şasi numarasını giriyorum. Cüzdan yok, kayıt yok, izin yok."
 
-Sayfa açılınca **skor halkasını** ve **zaman çizelgesini** gösterin.
+Sayfa açılınca **skor halkasını** gösterin.
 
-> "2019'dan bugüne altı kayıt. Her satırın altında onu yazan servisin adı ve
-> adresi var. Skor 100: hiç kaza kaydı yok."
+> "Skor 100. Altı kayıt, hiç kaza yok. Bu kadarını herkes ücretsiz görüyor —
+> aracın sicilde olduğu, kilometresi, skoru."
 
-**Neden burada:** Önce "iyi" hali gösterin ki kötü hali anlamlı olsun.
+**Neden burada:** Önce "iyi" hali gösterin ki kötü hali anlamlı olsun. Ayrıca
+ödeme duvarını daha görmeden, ücretsiz katmanın ne kadar iş gördüğünü kurun.
 
 ---
 
-## 0:32 – 0:52 · Hasarlı araç
+## 0:32 – 0:58 · Hasarlı araç ve ödeme
 
 **Ekran:** `1HGBH41JXMN109186`.
 
-> "Aynı sorgu, başka bir araç."
+> "Aynı sorgu, başka bir araç. Skor 53, iki kaza kaydı. Bu kadarı herkese açık."
 
-Skoru ve kırmızı rozeti gösterin, sonra çizelgede aşağı inin.
+Aşağı inin, **kilitli rapor** panelini gösterin.
 
-> "Skor 53. İki kaza kaydı. 2020'de ön şasi deformasyonu tespit edilmiş, on beş
-> gün sonra düzeltme yapılmış. Bu araç satıcının anlatmayacağı şeyi kendisi
-> anlatıyor."
+> "Ama geçmişin kendisi — tarihler, hangi serviste ne yapılmış, notlar — raporun
+> içinde. Bir kez ödüyorum, bu araç cüzdanımda kalıcı açılıyor."
 
-Soldaki **"Geçmişi yazanlar"** kartını gösterin.
+**Tam raporu aç** → MetaMask → onaylayın. Açılan zaman çizelgesini gösterin.
 
-> "Üç farklı servis yazmış. Biri diğerini doğruluyor."
+> "2020'de ön şasi deformasyonu tespit edilmiş, on beş gün sonra düzeltilmiş.
+> Üç farklı servis yazmış, biri diğerini doğruluyor. Satıcının anlatmayacağı şeyi
+> araç kendisi anlatıyor."
 
-**Neden burada:** Ürünün değeri tam olarak bu ekran. Acele etmeyin.
+Kilitli ekrandaki **paylaşım satırını** hatırlatın.
+
+> "Ödediğim ücretin yüzde yetmişi, bu geçmişi yazan servislere gidiyor."
+
+**Neden burada:** Ürünün değeri de, iş modeli de bu ekranda. Acele etmeyin.
 
 ---
 
-## 0:52 – 1:12 · Usta kaydı giriyor
+## 0:58 – 1:16 · Usta kaydı giriyor
 
 **Ekran:** Telefon, `/report`.
 
 > "Peki bu kayıtlar oraya nasıl giriyor? Sanayideki usta, işi bitirdiğinde
-> telefonundan."
+> telefonundan. Ve bakın burada ne var —"
+
+**Kazanç kartını** gösterin.
+
+> "Az önce ödediğim paranın payı buraya düştü. Usta yazdıkça kazanıyor. 'Neden
+> uğraşsın ki' sorusunun cevabı bu."
 
 Şasi numarasını yazın — **zincirden gelen son kilometrenin belirdiğini gösterin.**
 
@@ -91,7 +103,7 @@ Onay ekranındaki **milisaniye rakamını** gösterin.
 
 ---
 
-## 1:12 – 1:28 · Kapanış vuruşu
+## 1:16 – 1:28 · Kapanış vuruşu
 
 **Ekran:** Aynı formda kilometre alanına **daha düşük bir sayı** yazın.
 
@@ -121,10 +133,12 @@ Kısa bir es verin.
 ## Yedek plan
 
 - **Ağ yavaşlarsa:** Videoyu önceden kaydedin, canlı demo yedek olsun.
-- **Cüzdan bağlanmazsa:** Alıcı paneli cüzdan istemiyor; 0:12–0:52 arası tek
-  başına da hikâyeyi anlatır.
-- **Süre taşarsa:** İlk kesilecek parça temiz araç (0:12–0:32). Hasarlı araç ve
-  kilometre reddi asla kesilmez.
+- **Cüzdan bağlanmazsa:** Önizleme cüzdan istemiyor; skor, kilometre ve kaza
+  sayısı yine görünür. Hikâyenin ilk yarısı tek başına da ayakta durur.
+- **Alıcı cüzdanı raporu zaten satın almışsa:** Ödeme ekranı görünmez. Başka bir
+  araç seçin veya temiz cüzdana geçin — bu yüzden hazırlık listesinde var.
+- **Süre taşarsa:** İlk kesilecek parça temiz araç (0:12–0:32). Hasarlı araç,
+  ödeme ve kilometre reddi asla kesilmez.
 
 ## Kesinlikle anlatmayın
 

@@ -1,14 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, Fingerprint, Store, Wrench } from "lucide-react";
+import { AlertTriangle, Fingerprint, Wrench } from "lucide-react";
 
 import { Brand } from "@/components/brand";
+import { WalletButton } from "@/components/wallet-button";
 import { ScoreGauge } from "@/components/score-gauge";
-import { Timeline } from "@/components/timeline";
+import { FullReport } from "@/components/full-report";
 import { explorerAddress } from "@/lib/chain";
 import { registryAddress } from "@/lib/registry";
-import { loadVehicle } from "@/lib/server";
+import { loadVehiclePreview } from "@/lib/server";
 import { formatDate, formatKm } from "@/lib/utils";
 
 type Props = { params: Promise<{ vin: string }> };
@@ -23,23 +24,25 @@ export async function generateMetadata({ params }: Props) {
 
 export default async function VehiclePage({ params }: Props) {
   const { vin } = await params;
-  const vehicle = await loadVehicle(decodeURIComponent(vin));
+  const vehicle = await loadVehiclePreview(decodeURIComponent(vin));
 
   if (!vehicle) notFound();
 
-  const { summary, records, garages, image, tokenId } = vehicle;
-  const firstRecord = records[records.length - 1];
+  const { summary, image, tokenId } = vehicle;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-6">
       <header className="mb-10 flex items-center justify-between gap-4">
         <Brand />
-        <Link
-          href="/"
-          className="text-sm text-muted underline-offset-4 transition hover:text-bright hover:underline"
-        >
-          Yeni sorgu
-        </Link>
+        <div className="flex items-center gap-4">
+          <Link
+            href="/"
+            className="text-sm text-muted underline-offset-4 transition hover:text-bright hover:underline"
+          >
+            Yeni sorgu
+          </Link>
+          <WalletButton />
+        </div>
       </header>
 
       {/* --- identity ------------------------------------------------------ */}
@@ -99,57 +102,37 @@ export default async function VehiclePage({ params }: Props) {
             <h2 className="text-sm font-semibold text-bright">Güven kartı</h2>
             <dl className="mt-5 space-y-4">
               <Stat label="Toplam kayıt" value={String(summary.recordCount)} />
-              <Stat label="Farklı servis" value={String(garages.size)} />
               <Stat
                 label="Kaza kaydı"
                 value={summary.accidentCount > 0 ? String(summary.accidentCount) : "Yok"}
                 tone={summary.accidentCount > 0 ? "danger" : "neon"}
               />
-              {firstRecord && (
-                <Stat label="Sicile giriş" value={formatDate(firstRecord.serviceDay * 86_400)} />
-              )}
+              <Stat label="Sağlık skoru" value={`${summary.healthScore} / 100`} />
+              <Stat label="Son güncelleme" value={formatDate(summary.lastUpdatedAt)} />
             </dl>
           </section>
 
           <section className="glass p-6">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-bright">
-              <Store className="size-4 text-violet-bright" />
-              Geçmişi yazanlar
-            </h2>
-            <ul className="mt-4 space-y-3">
-              {[...garages.values()].map((garage) => (
-                <li key={garage.address}>
-                  <a
-                    href={explorerAddress(garage.address)}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group block"
-                  >
-                    <p className="text-sm text-bright transition group-hover:text-violet-bright">
-                      {garage.name}
-                    </p>
-                    <p className="numeric text-xs text-faint">
-                      {garage.address.slice(0, 10)}...{garage.address.slice(-6)}
-                    </p>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-5 text-xs leading-relaxed text-faint">
-              Yetkisi alınan bir servisin yazdığı kayıtlar da yerinde kalır. Geçmiş
-              yalnızca eklenir, hiçbir koşulda silinmez.
+            <h2 className="text-sm font-semibold text-bright">Bu ne kadarını gösteriyor?</h2>
+            <p className="mt-3 text-xs leading-relaxed text-faint">
+              Yukarıdakiler herkese açık: aracın sicilde olduğu, güncel kilometresi,
+              skoru ve kaç kaza kaydı taşıdığı. Kayıtların tarihleri, notları ve
+              hangi servisin yazdığı tam raporda.
+            </p>
+            <p className="mt-4 text-xs leading-relaxed text-faint">
+              Rapor ücretinin büyük kısmı, o aracın geçmişini yazan servislere
+              paylaştırılır. Usta yazdıkça kazanır.
             </p>
           </section>
         </aside>
 
         <section>
-          <h2 className="mb-5 text-sm font-semibold text-bright">
-            Servis geçmişi
-            <span className="ml-2 font-normal text-faint">
-              {summary.recordCount} kayıt, en yeniden eskiye
-            </span>
-          </h2>
-          <Timeline records={records} garages={garages} />
+          <FullReport
+            tokenId={tokenId.toString()}
+            priceWei={vehicle.priceWei}
+            garageCount={vehicle.garageCount}
+            garageShareBps={vehicle.garageShareBps}
+          />
         </section>
       </div>
 

@@ -34,7 +34,7 @@ abstract contract ServiceRegistry is Ownable, IVehicleRegistry {
         emit ServiceProviderSet(provider, name, active);
     }
 
-    function isServiceProvider(address provider) external view returns (bool) {
+    function isServiceProvider(address provider) public view returns (bool) {
         return _providers[provider].active;
     }
 

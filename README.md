@@ -5,11 +5,12 @@
 **İkinci el araçta kelimeye değil, kayda bakın.**
 
 Her araç bir dinamik NFT. Servis geçmişi zincirde, kilometre geri alınamıyor.
+Raporu okuyan öder, geçmişi yazan usta kazanır.
 
 [![Monad](https://img.shields.io/badge/Monad-Testnet-836EF9?style=flat-square)](https://monad.xyz)
-[![Kontrat](https://img.shields.io/badge/kontrat-0x08856c...664571-836EF9?style=flat-square)](https://testnet.monadexplorer.com/address/0x08856cd65ba4d9d6c7b76886406c16a0e7664571)
-[![Testler](https://img.shields.io/badge/testler-23%2F23-A0FF9E?style=flat-square)](#testler)
-[![Sourcify](https://img.shields.io/badge/kaynak-doğrulandı-A0FF9E?style=flat-square)](https://sourcify.dev/server/repo-ui/10143/0x08856cd65ba4d9d6c7b76886406c16a0e7664571)
+[![Kontrat](https://img.shields.io/badge/kontrat-0x530ae2...72de30-836EF9?style=flat-square)](https://testnet.monadexplorer.com/address/0x530ae2809c0828ea55a4a407903c4f9d0172de30)
+[![Testler](https://img.shields.io/badge/testler-37%2F37-A0FF9E?style=flat-square)](#testler)
+[![Sourcify](https://img.shields.io/badge/kaynak-doğrulandı-A0FF9E?style=flat-square)](https://sourcify.dev/server/repo-ui/10143/0x530ae2809c0828ea55a4a407903c4f9d0172de30)
 [![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.28-836EF9?style=flat-square)](https://soliditylang.org)
 
@@ -18,7 +19,7 @@ Her araç bir dinamik NFT. Servis geçmişi zincirde, kilometre geri alınamıyo
 **Hızlı geçiş:** [Problem](#problem) · [Ne yapıyor](#ne-yapıyor) · [Ekranlar](#ekranlar) ·
 [Canlı kontrat](#canlı-kontrat) · [Deneyin](#deneyin) · [Mimari](#mimari) ·
 [İki değişmez](#ürünü-taşıyan-iki-değişmez) · [Tasarım kararları](#tasarım-kararları) ·
-[Testler](#testler) · [Yerelde çalıştırma](#yerelde-çalıştırma) ·
+[Gelir modeli](#gelir-modeli) · [Testler](#testler) · [Yerelde çalıştırma](#yerelde-çalıştırma) ·
 [Güven varsayımları](#güven-varsayımları) · [Yol haritası](#yol-haritası)
 
 ---
@@ -40,9 +41,12 @@ kontrolünde** olması.
 ## Ne yapıyor
 
 MonadDrive her aracı tek bir ERC-721 token'ı olarak temsil ediyor. Token kimliği
-şasi numarasından türüyor, yani camdaki numarayı bilen herkes aracın tüm
-geçmişini sorgulayabiliyor — cüzdan kurmadan, kayıt olmadan, kimseden izin
-almadan.
+şasi numarasından türüyor, yani camdaki numarayı bilen herkes aracı sorgulayabiliyor.
+
+Sorgu iki katmanlı: **önizleme herkese açık** — aracın sicilde olduğu, güncel
+kilometresi, sağlık skoru ve kaç kaza kaydı taşıdığı, cüzdan istemeden görünüyor.
+**Tam rapor ücretli**: kayıtların tarihleri, notları, hangi servisin yazdığı ve
+fotoğrafları. Bir kez ödenir, o araç o cüzdanda kalıcı olarak açılır.
 
 Sanayideki usta işi bitirdiğinde telefonundan kaydı giriyor: şasi no, kilometre,
 işlem tipi, tarih, isterse fotoğraf. Kayıt bir saniyenin altında zincire yazılıyor
@@ -56,15 +60,14 @@ sanayide kullanılmaz.
 
 ### Alıcı sorgulama paneli
 
-Şasi numarasıyla açılıyor, cüzdan istemiyor. Aracın zincirde üretilen NFT
-görseli, güncel kilometresi, sağlık skoru ve doğduğu günden bugüne dikey zaman
-çizelgesi. Her kaydın altında onu imzalayan servisin adı.
+Şasi numarasıyla açılıyor. Üst bant ve güven kartı herkese açık; servis geçmişi
+ödeme duvarının arkasında.
 
-![Alıcı paneli — ağır hasar kayıtlı araç](docs/screenshots/vehicle.png)
+![Alıcı paneli — kilitli rapor](docs/screenshots/paywall.png)
 
-Aynı panel, temiz geçmişli bir araçta:
-
-![Alıcı paneli — temiz araç](docs/screenshots/clean.png)
+Ödemeden sonra aynı alan, aracın doğduğu günden bugüne dikey zaman çizelgesine
+dönüşüyor: her kaydın tarihi, kilometresi, notu ve onu imzalayan servisin adı,
+explorer bağlantısıyla birlikte.
 
 ### Giriş
 
@@ -86,16 +89,16 @@ Mobil odaklı, tek kolon, tek buton. Sanayide tek elle tutulan bir telefon için
 | | |
 |---|---|
 | **Ağ** | Monad Testnet (chainId `10143`) |
-| **Sicil kontratı** | [`0x08856cd65ba4d9d6c7b76886406c16a0e7664571`](https://testnet.monadexplorer.com/address/0x08856cd65ba4d9d6c7b76886406c16a0e7664571) |
+| **Sicil kontratı** | [`0x530ae2809c0828ea55a4a407903c4f9d0172de30`](https://testnet.monadexplorer.com/address/0x530ae2809c0828ea55a4a407903c4f9d0172de30) |
 | **RPC** | `https://testnet-rpc.monad.xyz` |
 | **Explorer** | [testnet.monadexplorer.com](https://testnet.monadexplorer.com) |
-| **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x08856cd65ba4d9d6c7b76886406c16a0e7664571) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
+| **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x530ae2809c0828ea55a4a407903c4f9d0172de30) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
 
 Zincirde şu an üç demo aracı ve 17 gerçek kayıt duruyor.
 
 ## Deneyin
 
-Sorgulama paneli cüzdan istemiyor. Şu şasi numaralarını deneyin:
+Önizleme cüzdan istemiyor. Şu şasi numaralarını deneyin:
 
 | Şasi numarası | Ne göreceksiniz |
 |---|---|
@@ -104,8 +107,9 @@ Sorgulama paneli cüzdan istemiyor. Şu şasi numaralarını deneyin:
 | `1HGBH41JXMN109186` | Ağır hasarlı — skor **53**, 2 kaza, şasi deformasyonu |
 | başka bir şey | Sicilde olmayan araç ekranı |
 
-Kayıt girmek için cüzdanınızın yetkili servis olarak onaylanmış olması gerekiyor
-(aşağıda [yerelde çalıştırma](#yerelde-çalıştırma)).
+Tam raporu açmak için cüzdan bağlayıp 0.05 MON ödemeniz gerekiyor. Kayıt girmek
+içinse cüzdanınızın yetkili servis olarak onaylanmış olması gerekiyor (aşağıda
+[yerelde çalıştırma](#yerelde-çalıştırma)).
 
 ## Mimari
 
@@ -207,6 +211,32 @@ dönüyor.
 imza atıldıktan sonra başlıyor, böylece ekrandaki rakam Monad'ın gecikmesi —
 kullanıcının tereddüdü değil.
 
+## Gelir modeli
+
+Alıcı bir aracın tam raporunu açtığında **0.05 MON** ödüyor. Bu ücret zincirde,
+tek işlemde bölüşülüyor:
+
+| Kime | Pay | Neye göre |
+|---|---|---|
+| Geçmişi yazan servisler | **%70** | O araçta kaç kayıt yazdıklarıyla orantılı |
+| Platform | **%30** | Sabit |
+
+Bir servis o araçtaki 5 kaydın 3'ünü yazdıysa, servis payının 3/5'ini alıyor.
+Ödemeler kontratta biriktiriliyor ve herkes kendi bakiyesini `withdrawEarnings`
+ile çekiyor — bir alıcının ödemesi, ödeme alamayan bir adres yüzünden
+takılmıyor.
+
+**Bu neden önemli:** "Usta neden oturup bunu telefona girsin?" sorusunun cevabı
+bu. Yazdığı kayıt okundukça kazanıyor. Sicil ne kadar dolu olursa raporlar o
+kadar değerli, raporlar değerlendikçe usta o kadar çok kazanıyor.
+
+Fiyat ve pay oranı kontrat sahibi tarafından değiştirilebiliyor
+(`setReportPrice`, `setPlatformShare`).
+
+Rapor üç durumda ücretsiz: aracın NFT sahibi kendi aracının geçmişini görüyor,
+onaylı servisler üzerinde çalışacakları aracı görüyor, ve herkes önizlemeyi
+görüyor.
+
 ## Testler
 
 23 test, hepsi geçiyor:
@@ -215,7 +245,10 @@ kullanıcının tereddüdü değil.
 npm --prefix contracts test
 ```
 
-Kapsananlar: yetkilendirme (yetkisiz yazma, yetkisi alınmış servis, yetkisi
+Kapsananlar: ödeme (erişim kilidi, kalıcılık, çift ödeme reddi, eksik ödeme,
+fazla ödemenin iadesi, araç sahibine ve servise ücretsiz erişim, **bölüşümün
+kayıt sayısına göre ağırlıklandırılması**, çekim, yetkisiz fiyat değişikliği),
+yetkilendirme (yetkisiz yazma, yetkisi alınmış servis, yetkisi
 alınan servisin geçmişinin korunması), kayıt (çift kayıt reddi, kayıtsız araca
 yazma), **kilometre garantisi** (ileri kabul, eşit kabul, geri reddi, red sonrası
 verinin bozulmaması), **servis tarihi** (sonradan girilen kaydın tarihini koruma,
@@ -223,8 +256,8 @@ sıfırın bugüne çevrilmesi, gelecek tarih reddi), skor (kaza düşüşü, ba
 spam'ine karşı tavan), okuma (bilinmeyen şasi boş durum, sayfalama, servis adı)
 ve dinamik metadata (yeni kayıtla değişmesi).
 
-Canlı zincirde ölçülen yazma süreleri (20 işlem): en hızlı **377 ms**, medyan
-**707 ms**.
+Canlı zincirde ölçülen yazma süreleri (21 işlem): en hızlı **370 ms**, medyan
+**701 ms**.
 
 ## Yerelde çalıştırma
 
@@ -278,6 +311,14 @@ Dürüst olmak gerekirse zincir her şeyi çözmüyor. Sistemin sınırları:
   ayrımı açıkça yapıyor.
 - **IPFS kalıcılığı.** Fotoğraflar pinleniyor; pin düşerse CID zincirde kalır ama
   dosya erişilemez olabilir.
+- **Ödeme duvarı gizlilik değil, üründür.** Kayıtlar herkese açık bir zincirde
+  herkese açık storage'da duruyor; kontrata doğrudan çağrı yapan biri onları
+  okuyabilir. Satılan şey veri değil, **rapor**: derlenmiş, okunabilir,
+  kaynağı belli sunum. Uygulama kilitli veriyi sayfa kaynağına hiç koymuyor —
+  kayıtlar ancak zincir o cüzdanın erişimi olduğunu söyledikten sonra tarayıcıya
+  iniyor — ama bu bir ürün sınırı, kriptografik bir kilit değil. Gerçekten
+  şifrelemek, ustanın tek tuşla kayıt girmesini ve geçmişin herkesçe
+  doğrulanabilir olmasını bozardı; bu takas bilinçli.
 
 ## Yol haritası
 

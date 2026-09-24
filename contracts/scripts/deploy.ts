@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { formatEther } from "viem";
+import { formatEther, parseEther } from "viem";
 
 import { network } from "hardhat";
 import artifact from "../artifacts/contracts/VehicleRegistry.sol/VehicleRegistry.json" with { type: "json" };
@@ -28,8 +28,21 @@ if (balance === 0n) {
   );
 }
 
+/** What a buyer pays for one vehicle's full report. */
+const reportPrice = parseEther(process.env.REPORT_PRICE ?? "0.05");
+
+/** The platform's cut; the rest goes to the garages that wrote the history. */
+const platformShareBps = Number(process.env.PLATFORM_SHARE_BPS ?? 3000);
+
+console.log(`price      ${formatEther(reportPrice)} MON per report`);
+console.log(`split      ${platformShareBps / 100}% platform / ${(10000 - platformShareBps) / 100}% garages`);
+
 const startedAt = Date.now();
-const registry = await viem.deployContract("VehicleRegistry", [deployer.account.address]);
+const registry = await viem.deployContract("VehicleRegistry", [
+  deployer.account.address,
+  reportPrice,
+  platformShareBps,
+]);
 const elapsed = Date.now() - startedAt;
 
 console.log(`\ndeployed   ${registry.address}  (${elapsed} ms)`);
@@ -41,6 +54,8 @@ const record = {
   chainId,
   address: registry.address,
   owner: deployer.account.address,
+  reportPrice: reportPrice.toString(),
+  platformShareBps,
   deployedAtBlock: Number(blockNumber),
   deployedAt: new Date().toISOString(),
 };

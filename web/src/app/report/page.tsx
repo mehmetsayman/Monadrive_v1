@@ -1,4 +1,5 @@
 import { Brand } from "@/components/brand";
+import { EarningsCard } from "@/components/earnings-card";
 import { ReportForm } from "@/components/report-form";
 import { WalletButton } from "@/components/wallet-button";
 
@@ -27,6 +28,7 @@ export default function ReportPage() {
         </p>
       </div>
 
+      <EarningsCard />
       <ReportForm />
     </main>
   );

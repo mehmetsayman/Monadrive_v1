@@ -69,6 +69,12 @@ interface IVehicleRegistry {
 
     event ServiceProviderSet(address indexed provider, string name, bool active);
 
+    event ReportPurchased(uint256 indexed tokenId, address indexed buyer, uint256 price);
+    event EarningsAccrued(address indexed beneficiary, uint256 indexed tokenId, uint256 amount);
+    event EarningsWithdrawn(address indexed beneficiary, uint256 amount);
+    event ReportPriceSet(uint256 price);
+    event PlatformShareSet(uint16 bps);
+
     /// @dev The one guarantee the whole product rests on.
     error MileageRollback(uint32 recorded, uint32 submitted);
     error NotAuthorizedService(address caller);
@@ -79,4 +85,10 @@ interface IVehicleRegistry {
 
     /// @dev Work cannot have been done tomorrow.
     error FutureServiceDate(uint16 today, uint16 submitted);
+
+    error InsufficientPayment(uint256 required, uint256 sent);
+    error AlreadyPurchased(uint256 tokenId, address buyer);
+    error NothingToWithdraw(address beneficiary);
+    error PayoutFailed(address beneficiary, uint256 amount);
+    error ShareOutOfRange(uint16 bps);
 }
