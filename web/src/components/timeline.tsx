@@ -1,7 +1,12 @@
 import { ExternalLink, Paperclip } from "lucide-react";
 
 import { explorerAddress } from "@/lib/chain";
-import { recordType, TONE_TEXT, type VehicleRecord } from "@/lib/registry";
+import {
+  recordType,
+  serviceDayToDate,
+  TONE_TEXT,
+  type VehicleRecord,
+} from "@/lib/registry";
 import type { Garage } from "@/lib/server";
 import { cn, formatDate, formatKm, shortAddress } from "@/lib/utils";
 
@@ -39,9 +44,10 @@ export function Timeline({
         const type = recordType(record.recordType);
         const garage = garages.get(record.reporter.toLowerCase());
         const isLatest = index === 0;
+        const servicedOn = serviceDayToDate(record.serviceDay);
 
         return (
-          <li key={`${record.timestamp}-${index}`} className="relative pb-7 pl-8 last:pb-0">
+          <li key={`${record.recordedAt}-${index}`} className="relative pb-7 pl-8 last:pb-0">
             <span
               className={cn(
                 "absolute left-0 top-1.5 size-[15px] rounded-full border-4 border-void",
@@ -66,8 +72,17 @@ export function Timeline({
               )}
 
               <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-faint">
-                <time dateTime={new Date(record.timestamp * 1000).toISOString()}>
-                  {formatDate(record.timestamp)}
+                {/*
+                  The service date is what a buyer is reading a history for. When
+                  the record reached the chain is the audit trail behind it, so it
+                  lives in the tooltip rather than competing for the same line.
+                */}
+                <time
+                  dateTime={servicedOn.toISOString()}
+                  title={`Zincire ${formatDate(record.recordedAt)} tarihinde yazıldı`}
+                  className="text-muted"
+                >
+                  {formatDate(record.serviceDay * 86_400)}
                 </time>
                 <span aria-hidden="true">·</span>
                 <a

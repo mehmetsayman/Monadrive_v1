@@ -106,7 +106,7 @@ export default async function VehiclePage({ params }: Props) {
                 tone={summary.accidentCount > 0 ? "danger" : "neon"}
               />
               {firstRecord && (
-                <Stat label="Sicile giriş" value={formatDate(firstRecord.timestamp)} />
+                <Stat label="Sicile giriş" value={formatDate(firstRecord.serviceDay * 86_400)} />
               )}
             </dl>
           </section>

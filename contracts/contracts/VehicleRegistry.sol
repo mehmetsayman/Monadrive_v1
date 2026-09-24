@@ -62,6 +62,7 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
     function registerVehicle(
         string calldata vin,
         uint32 initialMileage,
+        uint16 serviceDay,
         address vehicleOwner,
         string calldata ipfsCid,
         string calldata note
@@ -85,40 +86,54 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
         emit VehicleRegistered(tokenId, bytes32(tokenId), msg.sender, initialMileage);
 
         // The birth node of the timeline, so no vehicle starts with an empty history.
-        _appendRecord(tokenId, initialMileage, RecordType.Inspection, ipfsCid, note);
+        _appendRecord(tokenId, initialMileage, serviceDay, RecordType.Inspection, ipfsCid, note);
     }
 
     /// @notice Append a record. This is the one call the garage's phone makes.
+    /// @param serviceDay Whole days since the Unix epoch, for when the work was
+    ///        done. Pass 0 for work done today.
     function addRecordByVin(
         string calldata vin,
         uint32 mileage,
+        uint16 serviceDay,
         RecordType recordType,
         string calldata ipfsCid,
         string calldata note
     ) external onlyService returns (uint32 index) {
-        return _appendRecord(vinToTokenId(vin), mileage, recordType, ipfsCid, note);
+        return _appendRecord(vinToTokenId(vin), mileage, serviceDay, recordType, ipfsCid, note);
     }
 
     /// @notice Same as {addRecordByVin} when the caller already knows the token id.
     function addRecord(
         uint256 tokenId,
         uint32 mileage,
+        uint16 serviceDay,
         RecordType recordType,
         string calldata ipfsCid,
         string calldata note
     ) external onlyService returns (uint32 index) {
-        return _appendRecord(tokenId, mileage, recordType, ipfsCid, note);
+        return _appendRecord(tokenId, mileage, serviceDay, recordType, ipfsCid, note);
+    }
+
+    /// @notice Today, in the units {addRecordByVin} expects.
+    function today() public view returns (uint16) {
+        return uint16(block.timestamp / 1 days);
     }
 
     function _appendRecord(
         uint256 tokenId,
         uint32 mileage,
+        uint16 serviceDay,
         RecordType recordType,
         string memory ipfsCid,
         string memory note
     ) private returns (uint32 index) {
         Vehicle storage v = _vehicles[tokenId];
         if (!v.registered) revert VehicleNotFound(tokenId);
+
+        uint16 currentDay = today();
+        if (serviceDay == 0) serviceDay = currentDay;
+        if (serviceDay > currentDay) revert FutureServiceDate(currentDay, serviceDay);
 
         // The line the entire pitch rests on. A wound-back odometer is not a bad record
         // to flag later - it is a transaction that never lands.
@@ -138,7 +153,8 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
 
         _records[tokenId].push(
             Record({
-                timestamp: uint40(block.timestamp),
+                recordedAt: uint40(block.timestamp),
+                serviceDay: serviceDay,
                 mileage: mileage,
                 recordType: uint8(recordType),
                 reporter: msg.sender,
@@ -149,7 +165,7 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
 
         _creditServiceProvider(msg.sender);
 
-        emit RecordAdded(tokenId, msg.sender, index, recordType, mileage, ipfsCid);
+        emit RecordAdded(tokenId, msg.sender, index, recordType, mileage, serviceDay, ipfsCid);
     }
 
     function _scoreDelta(RecordType recordType)

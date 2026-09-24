@@ -28,6 +28,7 @@ const ERROR_SIGNATURES = {
   VehicleNotFound: "VehicleNotFound(uint256)",
   VehicleAlreadyRegistered: "VehicleAlreadyRegistered(uint256)",
   EmptyVin: "EmptyVin()",
+  FutureServiceDate: "FutureServiceDate(uint16,uint16)",
   OwnableUnauthorizedAccount: "OwnableUnauthorizedAccount(address)",
 } as const;
 
@@ -80,7 +81,7 @@ describe("VehicleRegistry", async () => {
   /** Registers VIN with a genesis inspection at `mileage`. */
   async function register(mileage: number, owner?: `0x${string}`) {
     await registry.write.registerVehicle(
-      [VIN, mileage, owner ?? carOwner.account.address, "", "Sicile ilk kayit"],
+      [VIN, mileage, 0, owner ?? carOwner.account.address, "", "Sicile ilk kayit"],
       { account: garage.account },
     );
     return registry.read.vinToTokenId([VIN]);
@@ -99,7 +100,7 @@ describe("VehicleRegistry", async () => {
 
     it("rejects writes from an address that was never approved", async () => {
       await expectRevert(
-        registry.write.registerVehicle([VIN, 10_000, carOwner.account.address, "", ""], {
+        registry.write.registerVehicle([VIN, 10_000, 0, carOwner.account.address, "", ""], {
           account: stranger.account,
         }),
         "NotAuthorizedService",
@@ -115,7 +116,8 @@ describe("VehicleRegistry", async () => {
       ]);
 
       await expectRevert(
-        registry.write.addRecordByVin([VIN, 20_000, RecordType.Maintenance, "", ""], {
+        registry.write.addRecordByVin(
+          [VIN, 20_000, 0, RecordType.Maintenance, "", ""], {
           account: garage.account,
         }),
         "NotAuthorizedService",
@@ -167,7 +169,7 @@ describe("VehicleRegistry", async () => {
     it("refuses to register the same VIN twice", async () => {
       await register(10_000);
       await expectRevert(
-        registry.write.registerVehicle([VIN, 5_000, carOwner.account.address, "", ""], {
+        registry.write.registerVehicle([VIN, 5_000, 0, carOwner.account.address, "", ""], {
           account: garage.account,
         }),
         "VehicleAlreadyRegistered",
@@ -177,7 +179,7 @@ describe("VehicleRegistry", async () => {
     it("refuses records for a VIN that was never registered", async () => {
       await expectRevert(
         registry.write.addRecordByVin(
-          [OTHER_VIN, 10_000, RecordType.Maintenance, "", ""],
+          [OTHER_VIN, 10_000, 0, RecordType.Maintenance, "", ""],
           { account: garage.account },
         ),
         "VehicleNotFound",
@@ -190,7 +192,7 @@ describe("VehicleRegistry", async () => {
       const tokenId = await register(10_000);
 
       await registry.write.addRecordByVin(
-        [VIN, 42_500, RecordType.Maintenance, "", "Yag ve filtre"],
+          [VIN, 42_500, 0, RecordType.Maintenance, "", "Yag ve filtre"],
         { account: garage.account },
       );
 
@@ -202,7 +204,7 @@ describe("VehicleRegistry", async () => {
       await register(10_000);
 
       await registry.write.addRecordByVin(
-        [VIN, 10_000, RecordType.PartReplacement, "", "Ayni ziyaret"],
+          [VIN, 10_000, 0, RecordType.PartReplacement, "", "Ayni ziyaret"],
         { account: garage.account },
       );
 
@@ -215,7 +217,7 @@ describe("VehicleRegistry", async () => {
 
       await expectRevert(
         registry.write.addRecordByVin(
-          [VIN, 65_000, RecordType.Maintenance, "", "Kilometre dusurme denemesi"],
+          [VIN, 65_000, 0, RecordType.Maintenance, "", "Kilometre dusurme denemesi"],
           { account: garage.account },
         ),
         "MileageRollback",
@@ -226,7 +228,8 @@ describe("VehicleRegistry", async () => {
       const tokenId = await register(120_000);
 
       await expectRevert(
-        registry.write.addRecordByVin([VIN, 65_000, RecordType.Maintenance, "", ""], {
+        registry.write.addRecordByVin(
+          [VIN, 65_000, 0, RecordType.Maintenance, "", ""], {
           account: garage.account,
         }),
         "MileageRollback",
@@ -235,6 +238,54 @@ describe("VehicleRegistry", async () => {
       const summary = await registry.read.getVehicleSummary([tokenId]);
       assert.equal(summary.lastMileage, 120_000);
       assert.equal(summary.recordCount, 1);
+    });
+  });
+
+  describe("service date", () => {
+    it("keeps the day the work was done apart from the day it was recorded", async () => {
+      const tokenId = await register(10_000);
+      const today = await registry.read.today();
+      const lastYear = today - 400;
+
+      await registry.write.addRecordByVin(
+        [VIN, 42_500, lastYear, RecordType.Maintenance, "", "Gecen yilki bakim"],
+        { account: garage.account },
+      );
+
+      const records = await registry.read.getRecords([tokenId]);
+      const backfilled = records[1];
+
+      assert.equal(backfilled.serviceDay, lastYear, "service day was not kept");
+      assert.ok(
+        backfilled.recordedAt > 0 && backfilled.serviceDay * 86_400 < backfilled.recordedAt,
+        "a backfilled record should be dated before the block that carried it",
+      );
+    });
+
+    it("treats day zero as today, so the garage can leave it blank", async () => {
+      const tokenId = await register(10_000);
+      const today = await registry.read.today();
+
+      await registry.write.addRecordByVin(
+        [VIN, 20_000, 0, RecordType.Maintenance, "", ""],
+        { account: garage.account },
+      );
+
+      const records = await registry.read.getRecords([tokenId]);
+      assert.equal(records[1].serviceDay, today);
+    });
+
+    it("refuses work dated in the future", async () => {
+      await register(10_000);
+      const today = await registry.read.today();
+
+      await expectRevert(
+        registry.write.addRecordByVin(
+          [VIN, 20_000, today + 1, RecordType.Maintenance, "", "Yarinki bakim"],
+          { account: garage.account },
+        ),
+        "FutureServiceDate",
+      );
     });
   });
 
@@ -248,13 +299,13 @@ describe("VehicleRegistry", async () => {
       const tokenId = await register(10_000);
 
       await registry.write.addRecordByVin(
-        [VIN, 20_000, RecordType.Accident, "", "Arka tampon"],
+          [VIN, 20_000, 0, RecordType.Accident, "", "Arka tampon"],
         { account: garage.account },
       );
       const afterAccident = await registry.read.healthScore([tokenId]);
 
       await registry.write.addRecordByVin(
-        [VIN, 30_000, RecordType.HeavyDamage, "", "Sasi hasari"],
+          [VIN, 30_000, 0, RecordType.HeavyDamage, "", "Sasi hasari"],
         { account: garage.account },
       );
       const afterHeavy = await registry.read.healthScore([tokenId]);
@@ -269,14 +320,15 @@ describe("VehicleRegistry", async () => {
     it("cannot be scrubbed clean by spamming maintenance records", async () => {
       const tokenId = await register(10_000);
 
-      await registry.write.addRecordByVin([VIN, 20_000, RecordType.HeavyDamage, "", ""], {
+      await registry.write.addRecordByVin(
+          [VIN, 20_000, 0, RecordType.HeavyDamage, "", ""], {
         account: garage.account,
       });
       const damaged = await registry.read.healthScore([tokenId]);
 
       for (let i = 0; i < 40; i++) {
         await registry.write.addRecordByVin(
-          [VIN, 20_000 + i * 100, RecordType.Maintenance, "", ""],
+          [VIN, 20_000 + i * 100, 0, RecordType.Maintenance, "", ""],
           { account: garage.account },
         );
       }
@@ -299,10 +351,12 @@ describe("VehicleRegistry", async () => {
 
     it("returns the history newest-first when paged", async () => {
       await register(10_000);
-      await registry.write.addRecordByVin([VIN, 20_000, RecordType.Maintenance, "", ""], {
+      await registry.write.addRecordByVin(
+          [VIN, 20_000, 0, RecordType.Maintenance, "", ""], {
         account: garage.account,
       });
-      await registry.write.addRecordByVin([VIN, 30_000, RecordType.Repair, "", ""], {
+      await registry.write.addRecordByVin(
+          [VIN, 30_000, 0, RecordType.Repair, "", ""], {
         account: garage.account,
       });
 
@@ -331,7 +385,8 @@ describe("VehicleRegistry", async () => {
         "metadata should be rendered on chain",
       );
 
-      await registry.write.addRecordByVin([VIN, 90_000, RecordType.Accident, "", ""], {
+      await registry.write.addRecordByVin(
+          [VIN, 90_000, 0, RecordType.Accident, "", ""], {
         account: garage.account,
       });
       const after = await registry.read.tokenURI([tokenId]);

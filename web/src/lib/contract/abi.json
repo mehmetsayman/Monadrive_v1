@@ -121,6 +121,22 @@
   {
     "inputs": [
       {
+        "internalType": "uint16",
+        "name": "today",
+        "type": "uint16"
+      },
+      {
+        "internalType": "uint16",
+        "name": "submitted",
+        "type": "uint16"
+      }
+    ],
+    "name": "FutureServiceDate",
+    "type": "error"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint8",
         "name": "recordType",
         "type": "uint8"
@@ -320,6 +336,12 @@
       },
       {
         "indexed": false,
+        "internalType": "uint16",
+        "name": "serviceDay",
+        "type": "uint16"
+      },
+      {
+        "indexed": false,
         "internalType": "string",
         "name": "ipfsCid",
         "type": "string"
@@ -448,6 +470,11 @@
         "type": "uint32"
       },
       {
+        "internalType": "uint16",
+        "name": "serviceDay",
+        "type": "uint16"
+      },
+      {
         "internalType": "enum IVehicleRegistry.RecordType",
         "name": "recordType",
         "type": "uint8"
@@ -485,6 +512,11 @@
         "internalType": "uint32",
         "name": "mileage",
         "type": "uint32"
+      },
+      {
+        "internalType": "uint16",
+        "name": "serviceDay",
+        "type": "uint16"
       },
       {
         "internalType": "enum IVehicleRegistry.RecordType",
@@ -583,8 +615,13 @@
         "components": [
           {
             "internalType": "uint40",
-            "name": "timestamp",
+            "name": "recordedAt",
             "type": "uint40"
+          },
+          {
+            "internalType": "uint16",
+            "name": "serviceDay",
+            "type": "uint16"
           },
           {
             "internalType": "uint32",
@@ -634,8 +671,13 @@
         "components": [
           {
             "internalType": "uint40",
-            "name": "timestamp",
+            "name": "recordedAt",
             "type": "uint40"
+          },
+          {
+            "internalType": "uint16",
+            "name": "serviceDay",
+            "type": "uint16"
           },
           {
             "internalType": "uint32",
@@ -695,8 +737,13 @@
         "components": [
           {
             "internalType": "uint40",
-            "name": "timestamp",
+            "name": "recordedAt",
             "type": "uint40"
+          },
+          {
+            "internalType": "uint16",
+            "name": "serviceDay",
+            "type": "uint16"
           },
           {
             "internalType": "uint32",
@@ -1132,6 +1179,11 @@
         "type": "uint32"
       },
       {
+        "internalType": "uint16",
+        "name": "serviceDay",
+        "type": "uint16"
+      },
+      {
         "internalType": "address",
         "name": "vehicleOwner",
         "type": "address"
@@ -1321,6 +1373,19 @@
         "internalType": "string",
         "name": "",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "today",
+    "outputs": [
+      {
+        "internalType": "uint16",
+        "name": "",
+        "type": "uint16"
       }
     ],
     "stateMutability": "view",

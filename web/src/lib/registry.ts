@@ -60,13 +60,31 @@ export type VehicleSummary = {
 };
 
 export type VehicleRecord = {
-  timestamp: number;
+  /** Block time: when the chain accepted this record. */
+  recordedAt: number;
+  /** Whole days since the Unix epoch: when the work was actually done. */
+  serviceDay: number;
   mileage: number;
   recordType: number;
   reporter: `0x${string}`;
   ipfsCid: string;
   note: string;
 };
+
+const SECONDS_PER_DAY = 86_400;
+
+/** The contract stores service dates as whole days; the UI wants a Date. */
+export function serviceDayToDate(day: number) {
+  return new Date(day * SECONDS_PER_DAY * 1000);
+}
+
+export function dateToServiceDay(date: Date) {
+  return Math.floor(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / (SECONDS_PER_DAY * 1000));
+}
+
+export function todayServiceDay() {
+  return dateToServiceDay(new Date());
+}
 
 /** Green above 80, amber to 50, red below. Matches the on-chain SVG. */
 export function scoreTone(score: number): RecordTone {

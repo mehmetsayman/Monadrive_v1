@@ -53,10 +53,19 @@ const GARAGE_MIN_BALANCE = parseEther("0.15");
 
 type Step = {
   by: number;
+  /** ISO date of the day the work was actually done. */
+  on: string;
   mileage: number;
   type: (typeof RecordType)[keyof typeof RecordType];
   note: string;
 };
+
+/** The units the contract stores service dates in: whole days since the epoch. */
+function toServiceDay(iso: string): number {
+  const day = Math.floor(Date.parse(`${iso}T12:00:00Z`) / 86_400_000);
+  if (!Number.isFinite(day)) throw new Error(`bad date in the seed data: ${iso}`);
+  return day;
+}
 
 const VEHICLES: Array<{
   vin: string;
@@ -69,16 +78,17 @@ const VEHICLES: Array<{
     label: "Bakimli, kazasiz",
     genesis: {
       by: 2,
+      on: "2019-03-14",
       mileage: 12_000,
       type: RecordType.Inspection,
       note: "Sicile ilk kayit - ekspertiz temiz",
     },
     history: [
-      { by: 0, mileage: 25_400, type: RecordType.Maintenance, note: "Periyodik bakim, yag ve filtre" },
-      { by: 1, mileage: 41_800, type: RecordType.Maintenance, note: "40.000 km bakimi" },
-      { by: 2, mileage: 56_200, type: RecordType.Inspection, note: "Yillik muayene - gecti" },
-      { by: 0, mileage: 72_900, type: RecordType.PartReplacement, note: "On fren balatasi" },
-      { by: 0, mileage: 88_100, type: RecordType.Maintenance, note: "Periyodik bakim" },
+      { by: 0, on: "2019-11-02", mileage: 25_400, type: RecordType.Maintenance, note: "Periyodik bakim, yag ve filtre" },
+      { by: 1, on: "2020-08-21", mileage: 41_800, type: RecordType.Maintenance, note: "40.000 km bakimi" },
+      { by: 2, on: "2021-06-09", mileage: 56_200, type: RecordType.Inspection, note: "Yillik muayene - gecti" },
+      { by: 0, on: "2022-10-17", mileage: 72_900, type: RecordType.PartReplacement, note: "On fren balatasi" },
+      { by: 0, on: "2024-04-25", mileage: 88_100, type: RecordType.Maintenance, note: "Periyodik bakim" },
     ],
   },
   {
@@ -86,16 +96,17 @@ const VEHICLES: Array<{
     label: "Hafif kazali",
     genesis: {
       by: 2,
+      on: "2018-05-30",
       mileage: 30_000,
       type: RecordType.Inspection,
       note: "Sicile ilk kayit",
     },
     history: [
-      { by: 0, mileage: 61_500, type: RecordType.Maintenance, note: "Periyodik bakim" },
-      { by: 1, mileage: 88_300, type: RecordType.Accident, note: "Arka tampon carpma - hafif" },
-      { by: 1, mileage: 89_000, type: RecordType.Repair, note: "Arka tampon degisimi ve boya" },
-      { by: 0, mileage: 118_700, type: RecordType.Maintenance, note: "Periyodik bakim" },
-      { by: 2, mileage: 131_200, type: RecordType.Inspection, note: "Yillik muayene - gecti" },
+      { by: 0, on: "2019-09-12", mileage: 61_500, type: RecordType.Maintenance, note: "Periyodik bakim" },
+      { by: 1, on: "2021-02-08", mileage: 88_300, type: RecordType.Accident, note: "Arka tampon carpma - hafif" },
+      { by: 1, on: "2021-02-19", mileage: 89_000, type: RecordType.Repair, note: "Arka tampon degisimi ve boya" },
+      { by: 0, on: "2023-07-04", mileage: 118_700, type: RecordType.Maintenance, note: "Periyodik bakim" },
+      { by: 2, on: "2025-05-16", mileage: 131_200, type: RecordType.Inspection, note: "Yillik muayene - gecti" },
     ],
   },
   {
@@ -103,15 +114,16 @@ const VEHICLES: Array<{
     label: "Agir hasar kayitli",
     genesis: {
       by: 2,
+      on: "2017-09-22",
       mileage: 50_000,
       type: RecordType.Inspection,
       note: "Sicile ilk kayit",
     },
     history: [
-      { by: 1, mileage: 71_400, type: RecordType.Accident, note: "Yan carpma - kapi ve marspiyel" },
-      { by: 1, mileage: 96_800, type: RecordType.HeavyDamage, note: "On sasi deformasyonu tespit edildi" },
-      { by: 1, mileage: 99_200, type: RecordType.Repair, note: "Sasi duzeltme ve kaynak" },
-      { by: 0, mileage: 142_500, type: RecordType.Maintenance, note: "Periyodik bakim" },
+      { by: 1, on: "2019-01-27", mileage: 71_400, type: RecordType.Accident, note: "Yan carpma - kapi ve marspiyel" },
+      { by: 1, on: "2020-11-30", mileage: 96_800, type: RecordType.HeavyDamage, note: "On sasi deformasyonu tespit edildi" },
+      { by: 1, on: "2020-12-15", mileage: 99_200, type: RecordType.Repair, note: "Sasi duzeltme ve kaynak" },
+      { by: 0, on: "2024-08-09", mileage: 142_500, type: RecordType.Maintenance, note: "Periyodik bakim" },
     ],
   },
 ];
@@ -204,10 +216,11 @@ for (const vehicle of VEHICLES) {
   }
 
   const genesisGarage = registryFor(garageWallets[vehicle.genesis.by]);
-  await send(`register @ ${vehicle.genesis.mileage.toLocaleString("tr-TR")} km`, () =>
+  await send(`register @ ${vehicle.genesis.mileage.toLocaleString("tr-TR")} km  (${vehicle.genesis.on})`, () =>
     genesisGarage.write.registerVehicle([
       vehicle.vin,
       vehicle.genesis.mileage,
+      toServiceDay(vehicle.genesis.on),
       deployer.account.address,
       "",
       vehicle.genesis.note,
@@ -216,8 +229,15 @@ for (const vehicle of VEHICLES) {
 
   for (const step of vehicle.history) {
     const garage = registryFor(garageWallets[step.by]);
-    await send(`${step.mileage.toLocaleString("tr-TR")} km  ${step.note}`, () =>
-      garage.write.addRecordByVin([vehicle.vin, step.mileage, step.type, "", step.note]),
+    await send(`${step.on}  ${step.mileage.toLocaleString("tr-TR")} km  ${step.note}`, () =>
+      garage.write.addRecordByVin([
+        vehicle.vin,
+        step.mileage,
+        toServiceDay(step.on),
+        step.type,
+        "",
+        step.note,
+      ]),
     );
   }
 

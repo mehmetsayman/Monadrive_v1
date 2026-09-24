@@ -14,9 +14,19 @@ interface IVehicleRegistry {
         HeavyDamage // 5 - agir hasar
     }
 
-    /// @dev Packed into a single storage slot (5 + 4 + 1 + 20 = 30 bytes).
+    /// @dev Packed into a single storage slot (5 + 2 + 4 + 1 + 20 = 32 bytes).
+    ///
+    ///      `recordedAt` and `serviceDay` are deliberately different things: when
+    ///      the chain accepted the record, and when the work was actually done. A
+    ///      garage entering last month's job today must not have that job dated
+    ///      today, or every history collapses onto the day it was typed in.
+    ///
+    ///      `serviceDay` counts whole days since the Unix epoch - all the
+    ///      precision a service date needs, and what makes the slot fit. uint16
+    ///      carries it to the year 2149.
     struct Record {
-        uint40 timestamp;
+        uint40 recordedAt;
+        uint16 serviceDay;
         uint32 mileage;
         uint8 recordType;
         address reporter;
@@ -53,6 +63,7 @@ interface IVehicleRegistry {
         uint32 indexed index,
         RecordType recordType,
         uint32 mileage,
+        uint16 serviceDay,
         string ipfsCid
     );
 
@@ -65,4 +76,7 @@ interface IVehicleRegistry {
     error VehicleAlreadyRegistered(uint256 tokenId);
     error EmptyVin();
     error InvalidRecordType(uint8 recordType);
+
+    /// @dev Work cannot have been done tomorrow.
+    error FutureServiceDate(uint16 today, uint16 submitted);
 }

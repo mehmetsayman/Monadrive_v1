@@ -19,6 +19,7 @@ import {
 
 import { explorerTx, monadTestnet } from "@/lib/chain";
 import {
+  dateToServiceDay,
   isCompleteVin,
   normalizeVin,
   RECORD_TYPES,
@@ -36,6 +37,13 @@ export function ReportForm() {
   const [mileage, setMileage] = useState("");
   const [typeValue, setTypeValue] = useState<number>(0);
   const [note, setNote] = useState("");
+
+  /**
+   * The day the work was done, which is not always today: a garage may be
+   * entering last week's job. Defaults to today and cannot be in the future.
+   */
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const [servicedOn, setServicedOn] = useState(todayIso);
 
   /** IPFS attachment: the photo or invoice backing this record. */
   const [attachment, setAttachment] = useState<{ name: string; cid: string } | null>(null);
@@ -98,8 +106,10 @@ export function ReportForm() {
     if (rollback) {
       return `Kayıtlı kilometre ${formatKm(recordedKm!)}. Daha düşük bir değer zincir tarafından reddedilir.`;
     }
+    if (!servicedOn) return "İşlem tarihi girin.";
+    if (servicedOn > todayIso) return "İşlem tarihi gelecekte olamaz.";
     return null;
-  }, [vin, summary, mileageNumber, rollback, recordedKm]);
+  }, [vin, summary, mileageNumber, rollback, recordedKm, servicedOn, todayIso]);
 
   const canSubmit =
     onRightNetwork &&
@@ -139,6 +149,7 @@ export function ReportForm() {
       args: [
         normalizeVin(vin),
         mileageNumber!,
+        dateToServiceDay(new Date(servicedOn)),
         typeValue,
         attachment?.cid ?? "",
         note.trim(),
@@ -151,6 +162,7 @@ export function ReportForm() {
     setConfirmMs(null);
     setMileage("");
     setNote("");
+    setServicedOn(todayIso);
     setAttachment(null);
     setUploadError(null);
   }
@@ -273,6 +285,16 @@ export function ReportForm() {
           )}
         />
         <span className="shrink-0 text-sm text-faint">km</span>
+      </Field>
+
+      <Field label="İşlem tarihi">
+        <input
+          type="date"
+          value={servicedOn}
+          max={todayIso}
+          onChange={(e) => setServicedOn(e.target.value)}
+          className="numeric w-full bg-transparent text-base text-bright outline-none [color-scheme:dark]"
+        />
       </Field>
 
       <div>
