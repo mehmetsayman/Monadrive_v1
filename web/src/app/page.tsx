@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, Gauge, ScrollText, ShieldCheck } from "lucide-react";
 
 import { Brand } from "@/components/brand";
+import { VinSearch } from "@/components/vin-search";
 import { WalletButton } from "@/components/wallet-button";
 import { explorerAddress } from "@/lib/chain";
 import { registryAddress } from "@/lib/registry";
@@ -46,18 +47,17 @@ export default function HomePage() {
           görüyor.
         </p>
 
-        <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            href="/report"
-            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-violet px-7 py-3.5 text-sm font-semibold text-white shadow-[0_12px_40px_-12px_var(--color-violet)] transition hover:bg-violet-bright sm:w-auto"
-          >
-            Usta paneli
-            <ArrowRight className="size-4" />
-          </Link>
-          <span className="rounded-full border border-violet/25 px-7 py-3.5 text-sm text-faint">
-            Alıcı sorgulama paneli — yakında
-          </span>
+        <div className="mt-10">
+          <VinSearch />
         </div>
+
+        <Link
+          href="/report"
+          className="mt-8 inline-flex items-center gap-2 text-sm text-muted underline-offset-4 transition hover:text-violet-bright hover:underline"
+        >
+          Servis misiniz? Usta paneline geçin
+          <ArrowRight className="size-4" />
+        </Link>
       </section>
 
       <section className="mt-24 grid gap-4 sm:grid-cols-3">

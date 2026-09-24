@@ -16,6 +16,11 @@ export const monadTestnet = defineChain({
   blockExplorers: {
     default: { name: "Monad Explorer", url: "https://testnet.monadexplorer.com" },
   },
+  contracts: {
+    // Verified present on Monad testnet, so viem folds the buyer panel's reads
+    // into a single round trip instead of one per record.
+    multicall3: { address: "0xcA11bde05977b3631167028862bE2a173976CA11" },
+  },
   testnet: true,
 });
 
