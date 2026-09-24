@@ -7,7 +7,8 @@
     "build": "hardhat compile",
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.ts --network monadTestnet",
-    "seed": "hardhat run scripts/seed.ts --network monadTestnet"
+    "seed": "hardhat run scripts/seed.ts --network monadTestnet",
+    "approve": "hardhat run scripts/approve.ts --network monadTestnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
