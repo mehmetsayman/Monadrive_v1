@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+/*
+ * MonadDrive design tokens.
+ *
+ * The product is a registry people trust with the biggest purchase they make
+ * after a house, so the surface reads like private banking rather than like a
+ * dApp: deep violet-black ground, one accent that means "verified", generous
+ * space, and numbers set in tabular monospace so mileages line up down a column.
+ */
+@theme {
+  /* Ground, from deepest to the panels that float on it. */
+  --color-void: #09060f;
+  --color-abyss: #0d0818;
+  --color-ink: #140d24;
+  --color-slate: #1c1330;
+
+  /* Monad violet. */
+  --color-violet: #836ef9;
+  --color-violet-bright: #a78bfa;
+  --color-violet-dim: #4c3d8f;
+
+  /* Verdicts. Green means the chain vouches for it. */
+  --color-neon: #a0ff9e;
+  --color-amber: #f5c86b;
+  --color-danger: #ff5c7a;
+
+  /* Text. */
+  --color-bright: #f4f1ff;
+  --color-muted: #a99fc9;
+  --color-faint: #6b5f91;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  --radius-panel: 1.25rem;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-void);
+  color: var(--color-bright);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  /* Two violet auras, so the black is never flat. */
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -20%, rgba(131, 110, 249, 0.18), transparent),
+    radial-gradient(ellipse 60% 50% at 100% 100%, rgba(131, 110, 249, 0.08), transparent);
+  background-attachment: fixed;
+}
+
+@layer components {
+  /* The frosted panel everything sits in. */
+  .glass {
+    background: linear-gradient(
+      160deg,
+      rgba(131, 110, 249, 0.09),
+      rgba(131, 110, 249, 0.03)
+    );
+    border: 1px solid rgba(131, 110, 249, 0.22);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: var(--radius-panel);
+  }
+
+  /* A panel that wants attention without shouting. */
+  .glass-lit {
+    box-shadow:
+      0 0 0 1px rgba(131, 110, 249, 0.1),
+      0 20px 60px -20px rgba(131, 110, 249, 0.35);
+  }
+
+  /* Mileages, scores, addresses: anything where digits should not shift. */
+  .numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-faint);
+  }
+}
+
+/* Chrome's autofill repaints inputs white, which wrecks the dark surface. */
+input:-webkit-autofill,
+input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-bright);
+  -webkit-box-shadow: 0 0 0 1000px var(--color-ink) inset;
+  caret-color: var(--color-bright);
+}
+
+::selection {
+  background: rgba(131, 110, 249, 0.35);
+}
