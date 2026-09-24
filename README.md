@@ -9,6 +9,7 @@ Her araç bir dinamik NFT. Servis geçmişi zincirde, kilometre geri alınamıyo
 [![Monad](https://img.shields.io/badge/Monad-Testnet-836EF9?style=flat-square)](https://monad.xyz)
 [![Kontrat](https://img.shields.io/badge/kontrat-0x08856c...664571-836EF9?style=flat-square)](https://testnet.monadexplorer.com/address/0x08856cd65ba4d9d6c7b76886406c16a0e7664571)
 [![Testler](https://img.shields.io/badge/testler-23%2F23-A0FF9E?style=flat-square)](#testler)
+[![Sourcify](https://img.shields.io/badge/kaynak-doğrulandı-A0FF9E?style=flat-square)](https://sourcify.dev/server/repo-ui/10143/0x08856cd65ba4d9d6c7b76886406c16a0e7664571)
 [![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.28-836EF9?style=flat-square)](https://soliditylang.org)
 
@@ -88,6 +89,7 @@ Mobil odaklı, tek kolon, tek buton. Sanayide tek elle tutulan bir telefon için
 | **Sicil kontratı** | [`0x08856cd65ba4d9d6c7b76886406c16a0e7664571`](https://testnet.monadexplorer.com/address/0x08856cd65ba4d9d6c7b76886406c16a0e7664571) |
 | **RPC** | `https://testnet-rpc.monad.xyz` |
 | **Explorer** | [testnet.monadexplorer.com](https://testnet.monadexplorer.com) |
+| **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x08856cd65ba4d9d6c7b76886406c16a0e7664571) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
 
 Zincirde şu an üç demo aracı ve 17 gerçek kayıt duruyor.
 

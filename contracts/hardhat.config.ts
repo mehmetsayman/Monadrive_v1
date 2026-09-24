@@ -27,6 +27,11 @@ const config: HardhatUserConfig = {
       viaIR: true,
     },
   },
+  // Sourcify needs no API key, and a verified source means a judge can read the
+  // contract on the explorer instead of taking the README's word for it.
+  verify: {
+    sourcify: { enabled: true },
+  },
   networks: {
     simulated: {
       type: "edr-simulated",
