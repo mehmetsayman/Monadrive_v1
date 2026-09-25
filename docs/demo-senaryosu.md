@@ -51,10 +51,10 @@ duymadan önce sorunu tanısın.
 
 > "Şasi numarasını giriyorum. Cüzdan yok, kayıt yok, izin yok."
 
-Sayfa açılınca **skor halkasını** gösterin.
+Sayfa açılınca **kilitli skor halkasını** gösterin.
 
-> "Skor 100. Altı kayıt, hiç kaza yok. Bu kadarını herkes ücretsiz görüyor —
-> aracın sicilde olduğu, kilometresi, skoru."
+> "Altı kayıt, hiç kaza yok, 88 bin kilometre. Bu kadarını herkes ücretsiz
+> görüyor. Ama aracın 100 üzerinden puanı burada, kilidin arkasında."
 
 **Neden burada:** Önce "iyi" hali gösterin ki kötü hali anlamlı olsun. Ayrıca
 ödeme duvarını daha görmeden, ücretsiz katmanın ne kadar iş gördüğünü kurun.

@@ -44,9 +44,14 @@ MonadDrive her aracı tek bir ERC-721 token'ı olarak temsil ediyor. Token kimli
 şasi numarasından türüyor, yani camdaki numarayı bilen herkes aracı sorgulayabiliyor.
 
 Sorgu iki katmanlı: **önizleme herkese açık** — aracın sicilde olduğu, güncel
-kilometresi, sağlık skoru ve kaç kaza kaydı taşıdığı, cüzdan istemeden görünüyor.
-**Tam rapor ücretli**: kayıtların tarihleri, notları, hangi servisin yazdığı ve
-fotoğrafları. Bir kez ödenir, o araç o cüzdanda kalıcı olarak açılır.
+kilometresi, kaç kayıt ve kaç kaza taşıdığı, cüzdan istemeden görünüyor.
+**Tam rapor ücretli**: 100 üzerinden sağlık skoru, kayıtların tarihleri,
+notları, hangi servisin yazdığı ve fotoğrafları. Bir kez ödenir, o araç o
+cüzdanda kalıcı olarak açılır.
+
+Skor bilerek duvarın arkasında: alıcının tek bakışta almak istediği cevap o, ve
+ücretsiz katmanın işi cevabı vermek değil, cevabın var olduğunu göstermek. Boş
+bir skor halkası ve "? / 100" bunu yapıyor.
 
 Sanayideki usta işi bitirdiğinde telefonundan kaydı giriyor: şasi no, kilometre,
 işlem tipi, tarih, isterse fotoğraf. Kayıt bir saniyenin altında zincire yazılıyor
@@ -105,7 +110,7 @@ Zincirde şu an dört demo aracı ve 18 gerçek kayıt duruyor.
 | `WVWZZZ1JZXW000001` | Bakımlı, kazasız — skor **100**, 6 kayıt |
 | `NM0GE9F79E1234567` | Hafif kazalı — skor **86**, 1 kaza |
 | `1HGBH41JXMN109186` | Ağır hasarlı — skor **53**, 2 kaza, şasi deformasyonu |
-| `TMBJJ7NE0J0123456` | Sicile yeni girmiş — tek kayıt, geçmişi henüz oluşuyor |
+| `TMBJJ7NE0J0123456` | Sicile yeni girmiş — geçmişi henüz oluşuyor |
 | başka bir şey | Sicilde olmayan araç ekranı |
 
 Tam raporu açmak için cüzdan bağlayıp 0.05 MON ödemeniz gerekiyor. Kayıt girmek

@@ -1,12 +1,11 @@
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AlertTriangle, Fingerprint, Wrench } from "lucide-react";
 
 import { Brand } from "@/components/brand";
 import { WalletButton } from "@/components/wallet-button";
-import { ScoreGauge } from "@/components/score-gauge";
 import { FullReport } from "@/components/full-report";
+import { VehicleImage, VehicleScore } from "@/components/vehicle-badge";
 import { explorerAddress } from "@/lib/chain";
 import { registryAddress } from "@/lib/registry";
 import { loadVehiclePreview } from "@/lib/server";
@@ -28,7 +27,7 @@ export default async function VehiclePage({ params }: Props) {
 
   if (!vehicle) notFound();
 
-  const { summary, image, tokenId } = vehicle;
+  const { summary, tokenId } = vehicle;
 
   return (
     <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-6">
@@ -48,18 +47,8 @@ export default async function VehiclePage({ params }: Props) {
       {/* --- identity ------------------------------------------------------ */}
       <section className="glass glass-lit overflow-hidden">
         <div className="grid gap-8 p-7 md:grid-cols-[auto_1fr_auto] md:items-center md:p-9">
-          {image ? (
-            <Image
-              src={image}
-              alt="Aracın zincirde üretilen NFT görseli"
-              width={168}
-              height={168}
-              unoptimized
-              className="mx-auto rounded-2xl border border-violet/25"
-            />
-          ) : (
-            <div className="mx-auto size-[168px] rounded-2xl border border-violet/25 bg-ink" />
-          )}
+          {/* The image carries the score in its pixels, so it is gated too. */}
+          <VehicleImage tokenId={tokenId.toString()} />
 
           <div className="min-w-0 text-center md:text-left">
             <p className="label">Şasi numarası</p>
@@ -91,7 +80,7 @@ export default async function VehiclePage({ params }: Props) {
             </div>
           </div>
 
-          <ScoreGauge score={summary.healthScore} className="mx-auto" />
+          <VehicleScore tokenId={tokenId.toString()} />
         </div>
       </section>
 
@@ -107,7 +96,6 @@ export default async function VehiclePage({ params }: Props) {
                 value={summary.accidentCount > 0 ? String(summary.accidentCount) : "Yok"}
                 tone={summary.accidentCount > 0 ? "danger" : "neon"}
               />
-              <Stat label="Sağlık skoru" value={`${summary.healthScore} / 100`} />
               <Stat label="Son güncelleme" value={formatDate(summary.lastUpdatedAt)} />
             </dl>
           </section>
@@ -116,8 +104,8 @@ export default async function VehiclePage({ params }: Props) {
             <h2 className="text-sm font-semibold text-bright">Bu ne kadarını gösteriyor?</h2>
             <p className="mt-3 text-xs leading-relaxed text-faint">
               Yukarıdakiler herkese açık: aracın sicilde olduğu, güncel kilometresi,
-              skoru ve kaç kaza kaydı taşıdığı. Kayıtların tarihleri, notları ve
-              hangi servisin yazdığı tam raporda.
+              kaç kayıt ve kaç kaza taşıdığı. Sağlık skoru, kayıtların tarihleri,
+              notları ve hangi servisin yazdığı tam raporda.
             </p>
             <p className="mt-4 text-xs leading-relaxed text-faint">
               Rapor ücretinin büyük kısmı, o aracın geçmişini yazan servislere

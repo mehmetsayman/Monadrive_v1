@@ -43,7 +43,6 @@ export type VehiclePreview = {
   vin: string;
   tokenId: bigint;
   summary: VehicleSummary;
-  image: string | null;
   /** Report price in wei, as a string so it survives the server boundary. */
   priceWei: string;
   /** How many garages would share this sale. A count, never the addresses -
@@ -67,8 +66,7 @@ export async function loadVehiclePreview(rawVin: string): Promise<VehiclePreview
 
   if (!summary.registered) return null;
 
-  const [image, price, platformShareBps, split] = await Promise.all([
-    loadTokenImage(tokenId),
+  const [price, platformShareBps, split] = await Promise.all([
     publicClient.readContract({ ...registry, functionName: "reportPrice" }) as Promise<bigint>,
     publicClient.readContract({ ...registry, functionName: "platformShareBps" }) as Promise<number>,
     publicClient.readContract({
@@ -82,34 +80,9 @@ export async function loadVehiclePreview(rawVin: string): Promise<VehiclePreview
     vin,
     tokenId,
     summary,
-    image,
     priceWei: price.toString(),
     // The split always ends with the platform, so the rest are garages.
     garageCount: Math.max(split[0].length - 1, 0),
     garageShareBps: 10_000 - Number(platformShareBps),
   };
-}
-
-/**
- * Pulls the SVG out of the on-chain metadata. Rendering the real token image is
- * the difference between claiming the NFT is dynamic and showing it.
- */
-async function loadTokenImage(tokenId: bigint): Promise<string | null> {
-  try {
-    const uri = (await publicClient.readContract({
-      ...registry,
-      functionName: "tokenURI",
-      args: [tokenId],
-    })) as string;
-
-    const encoded = uri.split(",")[1];
-    if (!encoded) return null;
-
-    const metadata = JSON.parse(Buffer.from(encoded, "base64").toString("utf8")) as {
-      image?: string;
-    };
-    return metadata.image ?? null;
-  } catch {
-    return null;
-  }
 }

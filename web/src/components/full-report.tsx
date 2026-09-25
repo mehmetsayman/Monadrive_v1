@@ -167,8 +167,9 @@ export function FullReport({
           <div className="space-y-2">
             <h3 className="text-lg font-semibold text-bright">Tam rapor kilitli</h3>
             <p className="text-sm leading-relaxed text-muted">
-              Her kaydın tarihi, notu, hangi servisin yazdığı ve varsa fotoğrafı bu
-              raporda. Bir kez ödeyin, bu araç cüzdanınızda kalıcı olarak açılsın.
+              Aracın 100 üzerinden sağlık skoru, her kaydın tarihi, notu, hangi
+              servisin yazdığı ve varsa fotoğrafı bu raporda. Bir kez ödeyin, bu
+              araç cüzdanınızda kalıcı olarak açılsın.
             </p>
           </div>
 
