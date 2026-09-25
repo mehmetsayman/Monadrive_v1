@@ -59,7 +59,7 @@ export function WalletButton({ className }: { className?: string }) {
         className,
       )}
     >
-      <span className="size-1.5 rounded-full bg-neon shadow-[0_0_8px_var(--color-neon)]" />
+      <span className="size-1.5 rounded-full bg-neon" />
       <span className="numeric text-sm text-muted">{shortAddress(address!)}</span>
       <button
         type="button"

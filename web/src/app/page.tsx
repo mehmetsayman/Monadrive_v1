@@ -35,15 +35,14 @@ export default function HomePage() {
       </header>
 
       <section className="mx-auto max-w-3xl text-center">
-        <p className="label">Monad Testnet</p>
-        <h1 className="mt-4 text-4xl font-semibold leading-[1.1] tracking-tight text-bright sm:text-6xl">
+        <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight text-bright sm:text-6xl">
           İkinci el araçta
           <br />
           <span className="text-violet-bright">kelimeye değil</span>, kayda bakın.
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted">
-          Her araç bir dinamik NFT. Servis geçmişi doğduğu günden bugüne zincirde
-          duruyor — sanayideki usta telefonundan giriyor, alıcı saniyeler içinde
+          Her araç bir dinamik NFT. Servis geçmişi doğduğu günden bugüne Monad
+          üzerinde duruyor — sanayideki usta telefonundan giriyor, alıcı saniyeler içinde
           görüyor. Raporu okuyan öder, geçmişi yazan usta kazanır.
         </p>
 

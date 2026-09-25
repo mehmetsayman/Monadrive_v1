@@ -10,3 +10,8 @@ out/
 
 # Local demo wiring: which of your wallets plays which role.
 contracts/deployments/roles.*.json
+
+# Impeccable design tooling: skill files are worth keeping, the 15 MB platform
+# binary is not — it re-downloads on first use.
+.claude/skills/impeccable/scripts/bin/
+.claude/settings.local.json

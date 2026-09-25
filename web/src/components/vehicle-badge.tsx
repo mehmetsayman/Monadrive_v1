@@ -51,9 +51,11 @@ export function VehicleImage({ tokenId }: { tokenId: string }) {
 
   const image = decodeImage(uri as string | undefined);
 
+  // An outline rather than a filled box: a second surface inside the identity
+  // card reads as a card within a card.
   if (!unlocked || !image) {
     return (
-      <div className="mx-auto flex size-[168px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-violet/25 bg-ink/60">
+      <div className="mx-auto flex size-[168px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-violet/30">
         <Lock className="size-5 text-violet-dim" />
         <span className="label">dNFT görseli</span>
       </div>

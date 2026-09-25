@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
 
 import { Providers } from "@/components/providers";
 
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+const sans = Schibsted_Grotesk({
+  variable: "--font-sans-face",
+  subsets: ["latin", "latin-ext"],
+});
+
+const mono = JetBrains_Mono({
+  variable: "--font-mono-face",
+  subsets: ["latin", "latin-ext"],
+});
 
 export const metadata: Metadata = {
   title: "MonadDrive — Araç sicili, zincirde",
@@ -18,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="tr"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sans.variable} ${mono.variable} h-full antialiased`}
     >
       <body className="min-h-full">
         <Providers>{children}</Providers>

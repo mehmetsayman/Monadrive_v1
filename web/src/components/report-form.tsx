@@ -466,7 +466,7 @@ export function ReportForm() {
           "flex w-full items-center justify-center gap-2.5 rounded-2xl px-6 py-5",
           "text-base font-semibold transition",
           canSubmit
-            ? "bg-violet text-white shadow-[0_12px_40px_-12px_var(--color-violet)] hover:bg-violet-bright active:scale-[0.99]"
+            ? "raised bg-violet text-white hover:bg-violet-bright active:scale-[0.99]"
             : "cursor-not-allowed bg-slate text-faint",
         )}
       >

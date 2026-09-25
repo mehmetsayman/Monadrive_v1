@@ -160,7 +160,9 @@ export function FullReport({
         </div>
 
         <div className="relative mx-auto max-w-md space-y-5">
-          <div className="glass mx-auto flex size-14 items-center justify-center rounded-2xl">
+          {/* Not a panel of its own: a card inside a card is depth nobody asked
+              for. A ring does the same job without the second surface. */}
+          <div className="mx-auto flex size-14 items-center justify-center rounded-2xl border border-violet/30">
             <Lock className="size-6 text-violet-bright" />
           </div>
 
@@ -202,7 +204,7 @@ export function FullReport({
                   value: price,
                 })
               }
-              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-4 text-sm font-semibold text-white shadow-[0_12px_40px_-12px_var(--color-violet)] transition hover:bg-violet-bright disabled:opacity-60"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-violet px-6 py-4 text-sm font-semibold text-white raised transition hover:bg-violet-bright disabled:opacity-60"
             >
               {isPending ? (
                 <>

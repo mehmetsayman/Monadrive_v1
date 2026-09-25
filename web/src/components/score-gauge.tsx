@@ -43,7 +43,6 @@ export function ScoreGauge({ score, className }: { score: number; className?: st
             strokeWidth="9"
             strokeLinecap="round"
             strokeDasharray={`${filled} ${circumference}`}
-            style={{ filter: `drop-shadow(0 0 6px ${TONE_STROKE[tone]})` }}
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">

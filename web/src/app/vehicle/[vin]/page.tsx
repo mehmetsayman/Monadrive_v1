@@ -51,10 +51,12 @@ export default async function VehiclePage({ params }: Props) {
           <VehicleImage tokenId={tokenId.toString()} />
 
           <div className="min-w-0 text-center md:text-left">
-            <p className="label">Şasi numarası</p>
-            <h1 className="numeric mt-1.5 break-all text-2xl font-semibold tracking-[0.06em] text-bright sm:text-3xl">
+            <h1 className="numeric break-all text-2xl font-semibold tracking-[0.06em] text-bright sm:text-3xl">
               {vehicle.vin}
             </h1>
+            <p className="mt-2 text-sm text-muted">
+              Bu şasi numarasıyla sicile kayıtlı araç
+            </p>
 
             <p className="numeric mt-9 text-5xl font-semibold leading-none text-bright sm:text-6xl">
               {formatKm(summary.lastMileage)}

@@ -58,7 +58,7 @@ export function VinSearch({ autoFocus = false }: { autoFocus?: boolean }) {
           className={cn(
             "rounded-2xl px-8 py-4 text-sm font-semibold transition",
             ready && !busy
-              ? "bg-violet text-white shadow-[0_12px_40px_-12px_var(--color-violet)] hover:bg-violet-bright"
+              ? "raised bg-violet text-white hover:bg-violet-bright"
               : "cursor-not-allowed bg-slate text-faint",
           )}
         >
