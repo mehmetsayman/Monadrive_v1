@@ -115,6 +115,10 @@ Onay ekranındaki **milisaniye rakamını** gösterin.
 
 **Neden burada:** Sub-second finality'yi anlatmayın, **ölçün ve gösterin.**
 
+> Vaktiniz varsa: sicilde olmayan bir şasi numarası yazın, panelin "ilk kaydı siz
+> açıyorsunuz" moduna geçtiğini gösterin. Bir aracın sicile girmesi de ustanın
+> işi. Süre darsa bunu atlayın.
+
 ---
 
 ## 1:16 – 1:28 · Kapanış vuruşu

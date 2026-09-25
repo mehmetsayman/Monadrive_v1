@@ -54,8 +54,9 @@ Skor bilerek duvarın arkasında: alıcının tek bakışta almak istediği ceva
 bir skor halkası ve "? / 100" bunu yapıyor.
 
 Sanayideki usta işi bitirdiğinde telefonundan kaydı giriyor: şasi no, kilometre,
-işlem tipi, tarih, isterse fotoğraf. Kayıt bir saniyenin altında zincire yazılıyor
-ve bir daha değiştirilemiyor.
+işlem tipi, tarih, isterse fotoğraf. Araç sicilde yoksa aynı ekrandan sicile
+açıyor. Kayıt bir saniyenin altında zincire yazılıyor ve bir daha
+değiştirilemiyor.
 
 Monad'ın sub-second finality'si burada süs değil, ürünün ön şartı: bir ustanın
 müşteriyi bekletirken blok onayı için 15 saniye beklemesi gerekiyorsa o sistem
@@ -81,6 +82,12 @@ explorer bağlantısıyla birlikte.
 ### Usta / servis paneli
 
 Mobil odaklı, tek kolon, tek buton. Sanayide tek elle tutulan bir telefon için.
+
+Panel iki işi de yapıyor. Sicilde olan bir şasi numarasında kayıt ekliyor; sicilde
+**olmayan** bir numarada ise "ilk kaydı siz açıyorsunuz" moduna geçiyor ve aracı
+sicile kaydediyor. Bir aracın sicile ilk kez girmesi de ustanın işi, ve girilen
+ilk kilometre aracın taban değeri oluyor — bundan sonra hiçbir servis altına
+inemiyor.
 
 <div align="center">
   <img src="docs/screenshots/report.png" alt="Usta paneli" width="300" />
@@ -255,7 +262,7 @@ görüyor.
 
 ## Testler
 
-23 test, hepsi geçiyor:
+37 test, hepsi geçiyor:
 
 ```
 npm --prefix contracts test
@@ -289,11 +296,11 @@ cd Monadrive_v1
 # 1. Kontratlar
 cd contracts
 npm install
-npm test                       # 23 test, zincire bağlanmadan çalışır
+npm test                       # 37 test, zincire bağlanmadan çalışır
 
 cp .env.example .env           # MONAD_PRIVATE_KEY satırını doldurun
 npm run deploy                 # Monad Testnet'e çıkar
-npm run seed                   # üç demo aracını geçmişiyle yazar
+npm run seed                   # dört demo aracını geçmişiyle yazar
 
 # kendi cüzdanınıza yazma yetkisi verin
 GARAGE=0xADRESINIZ GARAGE_NAME="Servis adı" npm run approve
@@ -304,6 +311,23 @@ npm install
 npm run sync:contract          # kontrat adresini ve ABI'yi kopyalar
 npm run dev                    # http://localhost:3000
 ```
+
+### Demo ve bakım komutları
+
+Hepsi `contracts/` içinde çalışır.
+
+| Komut | Ne yapar |
+|---|---|
+| `npm run status` | Kasada ne var, kim ne kazandı, son satışlar. Gas ile satış gelirini ayrı gösterir |
+| `npm run newcar` | Tertemiz bir araç kaydeder ve şasi numarasını verir |
+| `npm run roles` | `USTA` ve `MUSTERI` adreslerini rollere bağlar, fonlar, çakışan yetkileri temizler |
+| `npm run buy` | Demo alıcı olarak bir rapor satın alır, bölüşümü yazdırır |
+| `npm run keys` | Seed'in ürettiği demo servis cüzdanlarını yazdırır (MetaMask'e aktarmak için) |
+| `npm run approve` | Bir adrese servis yetkisi verir veya alır |
+
+> **Rapor erişimi araç başına kalıcıdır.** Bir cüzdan bir aracın raporunu bir kez
+> açtıysa o araçta ödeme ekranı bir daha çıkmaz. Demo çekmeden önce
+> `npm run newcar` çalıştırın.
 
 Fotoğraf yükleme isteğe bağlı: `web/.env.local` içine `PINATA_JWT=...` eklerseniz
 aktifleşir. Eklemezseniz uygulama çalışmaya devam eder, yalnızca fotoğraf alanı
