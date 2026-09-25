@@ -1,6 +1,4 @@
-import { FileQuestion } from "lucide-react";
-
-import { Brand } from "@/components/brand";
+import { DocHead, PageFoot, SectionHeading, TopBand } from "@/components/datasheet";
 import { VinSearch } from "@/components/vin-search";
 
 /**
@@ -10,29 +8,34 @@ import { VinSearch } from "@/components/vin-search";
  */
 export default function VehicleNotFound() {
   return (
-    <main className="mx-auto w-full max-w-2xl px-6 pb-20 pt-6">
-      <header className="mb-20">
-        <Brand />
-      </header>
+    <>
+      <TopBand />
+      <DocHead
+        tag="Kayıt bulunamadı"
+        meta={["Sorgu sonucu", "Monad Testnet"]}
+        partno="—"
+        partnoSub="Sicilde değil"
+      />
 
-      <div className="flex flex-col items-center text-center">
-        <div className="glass flex size-16 items-center justify-center rounded-2xl">
-          <FileQuestion className="size-7 text-violet-bright" />
+      <main className="wrap py-[clamp(48px,7vw,96px)]">
+        <div className="max-w-[640px]">
+          <h1 className="display text-[clamp(34px,4.4vw,58px)]">
+            Bu araç <em>sicilde yok.</em>
+          </h1>
+
+          <div className="mt-6 border-l-[3px] border-red bg-red-wash px-4 py-3 text-[15px] text-ink">
+            Bu, aracın geçmişinin temiz olduğu anlamına <b>gelmez</b> — yalnızca henüz
+            hiçbir servisin onu sicile girmediğini gösterir.
+          </div>
+
+          <div className="mt-11">
+            <SectionHeading n={1}>Başka bir şasi numarası deneyin</SectionHeading>
+            <VinSearch autoFocus />
+          </div>
         </div>
+      </main>
 
-        <h1 className="mt-6 text-2xl font-semibold text-bright">
-          Bu araç sicile kayıtlı değil
-        </h1>
-        <p className="mt-3 max-w-md text-sm leading-relaxed text-muted">
-          Girdiğiniz şasi numarası için zincirde bir kayıt bulunamadı. Bu, aracın
-          geçmişinin temiz olduğu anlamına gelmez — yalnızca henüz hiçbir servisin
-          bu aracı sicile girmediğini gösterir.
-        </p>
-
-        <div className="mt-10 w-full">
-          <VinSearch />
-        </div>
-      </div>
-    </main>
+      <PageFoot id="Sorgu sonucu" page={1} />
+    </>
   );
 }

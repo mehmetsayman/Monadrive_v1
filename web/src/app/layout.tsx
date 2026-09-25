@@ -1,13 +1,19 @@
 import type { Metadata } from "next";
-import { JetBrains_Mono, Schibsted_Grotesk } from "next/font/google";
+import { Archivo, JetBrains_Mono } from "next/font/google";
 
 import { Providers } from "@/components/providers";
 
 import "./globals.css";
 
-const sans = Schibsted_Grotesk({
+/*
+ * Archivo is loaded as a variable font with its width axis, because the whole
+ * datasheet voice lives on that axis: condensed and heavy for headlines, normal
+ * width for body text. A fixed-width cut would lose half the typography.
+ */
+const sans = Archivo({
   variable: "--font-sans-face",
   subsets: ["latin", "latin-ext"],
+  axes: ["wdth"],
 });
 
 const mono = JetBrains_Mono({
@@ -16,17 +22,14 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "MonadDrive — Araç sicili, zincirde",
+  title: "MonadDrive MDV-1 — Araç sicili, zincirde",
   description:
     "Her aracın servis geçmişi bir dinamik NFT. Kilometre geri alınamaz, kaza kaydı silinemez.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="tr"
-      className={`${sans.variable} ${mono.variable} h-full antialiased`}
-    >
+    <html lang="tr" className={`${sans.variable} ${mono.variable} h-full antialiased`}>
       <body className="min-h-full">
         <Providers>{children}</Providers>
       </body>

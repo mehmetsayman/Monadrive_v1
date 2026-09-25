@@ -86,3 +86,16 @@ export async function loadVehiclePreview(rawVin: string): Promise<VehiclePreview
     garageShareBps: 10_000 - Number(platformShareBps),
   };
 }
+
+/** The registry's current terms, for the tables that quote them. */
+export async function loadRegistryInfo() {
+  const [price, platformShareBps] = await Promise.all([
+    publicClient.readContract({ ...registry, functionName: "reportPrice" }) as Promise<bigint>,
+    publicClient.readContract({ ...registry, functionName: "platformShareBps" }) as Promise<number>,
+  ]);
+
+  return {
+    priceWei: price.toString(),
+    platformShareBps: Number(platformShareBps),
+  };
+}

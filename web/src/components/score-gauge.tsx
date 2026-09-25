@@ -1,63 +1,84 @@
+import { Lock } from "lucide-react";
+
 import { scoreTone } from "@/lib/registry";
 import { cn } from "@/lib/utils";
 
-const TONE_STROKE = {
-  good: "var(--color-neon)",
-  warn: "var(--color-amber)",
-  bad: "var(--color-danger)",
-  neutral: "var(--color-violet)",
+const TONE = {
+  good: { fill: "bg-green", text: "text-green", verdict: "Temiz geçmiş" },
+  warn: { fill: "bg-amber", text: "text-amber", verdict: "Dikkatli inceleyin" },
+  bad: { fill: "bg-red", text: "text-red", verdict: "Ağır hasar kaydı" },
+  neutral: { fill: "bg-ink", text: "text-ink", verdict: "—" },
 } as const;
 
-const VERDICT = {
-  good: "Temiz geçmiş",
-  warn: "Dikkatli inceleyin",
-  bad: "Ağır hasar kaydı",
-  neutral: "—",
-} as const;
+/** The two thresholds the verdict changes at, drawn as ticks on the scale. */
+const TICKS = [0, 50, 80, 100];
 
-/** The score as a ring. One number, one colour, one sentence. */
-export function ScoreGauge({ score, className }: { score: number; className?: string }) {
-  const tone = scoreTone(score);
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-  const filled = (Math.min(Math.max(score, 0), 100) / 100) * circumference;
+/**
+ * The health score as a datasheet draws a value against its range: a ruled bar
+ * with the thresholds marked, rather than a ring. A ring is decoration; a scale
+ * tells you where 53 sits between the lines that matter.
+ */
+export function ScoreBar({ score }: { score: number }) {
+  const tone = TONE[scoreTone(score)];
+  const clamped = Math.min(Math.max(score, 0), 100);
 
   return (
-    <div className={cn("flex flex-col items-center gap-3", className)}>
-      <div className="relative size-[132px]">
-        <svg viewBox="0 0 132 132" className="size-full -rotate-90">
-          <circle
-            cx="66"
-            cy="66"
-            r={radius}
-            fill="none"
-            stroke="var(--color-slate)"
-            strokeWidth="9"
-          />
-          <circle
-            cx="66"
-            cy="66"
-            r={radius}
-            fill="none"
-            stroke={TONE_STROKE[tone]}
-            strokeWidth="9"
-            strokeLinecap="round"
-            strokeDasharray={`${filled} ${circumference}`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span
-            className="numeric text-4xl font-semibold leading-none"
-            style={{ color: TONE_STROKE[tone] }}
-          >
-            {score}
-          </span>
-          <span className="numeric mt-1 text-xs text-faint">/ 100</span>
-        </div>
+    <div>
+      <div className="mb-2 flex items-baseline justify-between gap-4">
+        <span className="label">Sağlık skoru</span>
+        <span className="numeric text-[15px] text-ink-3">
+          <span className={cn("partno text-[40px]", tone.text)}>{score}</span> / 100
+        </span>
       </div>
-      <p className="text-sm font-medium" style={{ color: TONE_STROKE[tone] }}>
-        {VERDICT[tone]}
-      </p>
+      <Scale>
+        <div className={cn("h-full", tone.fill)} style={{ width: `${clamped}%` }} />
+      </Scale>
+      <p className={cn("mt-3 text-[14px] font-semibold", tone.text)}>{tone.verdict}</p>
+    </div>
+  );
+}
+
+/** Same scale, empty, with the number withheld. */
+export function LockedScoreBar() {
+  return (
+    <div>
+      <div className="mb-2 flex items-baseline justify-between gap-4">
+        <span className="label">Sağlık skoru</span>
+        <span className="numeric flex items-center gap-2 text-[15px] text-ink-3">
+          <Lock className="size-4 text-red" strokeWidth={2} />
+          <span className="partno text-[40px] text-ink-3">?</span> / 100
+        </span>
+      </div>
+      <Scale>
+        {/* Hatched: the value exists, it is just not shown. */}
+        <div
+          className="h-full w-full"
+          style={{
+            backgroundImage:
+              "repeating-linear-gradient(135deg, #e6e6e1 0 6px, transparent 6px 12px)",
+          }}
+        />
+      </Scale>
+      <p className="mt-3 text-[14px] font-semibold text-red">Tam raporda açılır</p>
+    </div>
+  );
+}
+
+function Scale({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <div className="relative h-5 border-[1.5px] border-ink bg-white">{children}</div>
+      <div className="relative mt-1 h-4">
+        {TICKS.map((tick) => (
+          <span
+            key={tick}
+            className="numeric absolute -translate-x-1/2 text-[11px] text-ink-3"
+            style={{ left: `${tick}%` }}
+          >
+            {tick}
+          </span>
+        ))}
+      </div>
     </div>
   );
 }

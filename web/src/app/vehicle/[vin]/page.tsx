@@ -1,15 +1,12 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AlertTriangle, Fingerprint, Wrench } from "lucide-react";
 
-import { Brand } from "@/components/brand";
-import { WalletButton } from "@/components/wallet-button";
+import { DocHead, PageFoot, SectionHeading, TopBand } from "@/components/datasheet";
 import { FullReport } from "@/components/full-report";
 import { VehicleImage, VehicleScore } from "@/components/vehicle-badge";
 import { explorerAddress } from "@/lib/chain";
 import { registryAddress } from "@/lib/registry";
 import { loadVehiclePreview } from "@/lib/server";
-import { formatDate, formatKm } from "@/lib/utils";
+import { cn, formatDate, formatKm, shortAddress } from "@/lib/utils";
 
 type Props = { params: Promise<{ vin: string }> };
 
@@ -18,9 +15,16 @@ export const revalidate = 0;
 
 export async function generateMetadata({ params }: Props) {
   const { vin } = await params;
-  return { title: `${decodeURIComponent(vin)} — MonadDrive` };
+  return { title: `${decodeURIComponent(vin)} — MonadDrive sicil raporu` };
 }
 
+/**
+ * One vehicle, as a datasheet: part number, revision, a device table, figures.
+ *
+ * Everything on this server-rendered page is the free preview. The score, the
+ * dNFT image and the record-by-record history are read in the browser only
+ * after the chain says the viewer has access, so none of it is in the source.
+ */
 export default async function VehiclePage({ params }: Props) {
   const { vin } = await params;
   const vehicle = await loadVehiclePreview(decodeURIComponent(vin));
@@ -28,161 +32,136 @@ export default async function VehiclePage({ params }: Props) {
   if (!vehicle) notFound();
 
   const { summary, tokenId } = vehicle;
+  const records = Number(summary.recordCount);
+  const accidents = Number(summary.accidentCount);
+  const nftId = tokenId.toString(16).slice(0, 8);
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-6 pb-20 pt-6">
-      <header className="mb-10 flex items-center justify-between gap-4">
-        <Brand />
-        <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            className="text-sm text-muted underline-offset-4 transition hover:text-bright hover:underline"
-          >
-            Yeni sorgu
-          </Link>
-          <WalletButton />
-        </div>
-      </header>
+    <>
+      <TopBand />
+      <DocHead
+        tag="Araç sicil raporu"
+        meta={[
+          <span key="vin" className="numeric">
+            {vehicle.vin}
+          </span>,
+          `Rev. ${records} kayıt`,
+          `Son güncelleme ${formatDate(summary.lastUpdatedAt)}`,
+        ]}
+        partno={
+          <>
+            {formatKm(summary.lastMileage)}
+            <span className="ml-1.5 text-[0.4em] font-bold tracking-normal text-ink-3">km</span>
+          </>
+        }
+        partnoSub="Güncel kilometre"
+      />
 
-      {/* --- identity ------------------------------------------------------ */}
-      <section className="glass glass-lit overflow-hidden">
-        <div className="grid gap-8 p-7 md:grid-cols-[auto_1fr_auto] md:items-center md:p-9">
-          {/* The image carries the score in its pixels, so it is gated too. */}
-          <VehicleImage tokenId={tokenId.toString()} />
-
-          <div className="min-w-0 text-center md:text-left">
-            <h1 className="numeric break-all text-2xl font-semibold tracking-[0.06em] text-bright sm:text-3xl">
-              {vehicle.vin}
-            </h1>
-            <p className="mt-2 text-sm text-muted">
-              Bu şasi numarasıyla sicile kayıtlı araç
-            </p>
-
-            <p className="numeric mt-9 text-5xl font-semibold leading-none text-bright sm:text-6xl">
-              {formatKm(summary.lastMileage)}
-              <span className="ml-2 text-xl font-normal text-muted">km</span>
-            </p>
-            <p className="mt-2 text-sm text-faint">
-              Son güncelleme {formatDate(summary.lastUpdatedAt)}
-            </p>
-
-            <div className="mt-6 flex flex-wrap justify-center gap-2 md:justify-start">
-              <Badge icon={Fingerprint} tone="violet">
-                dNFT #{tokenId.toString(16).slice(0, 8)}
-              </Badge>
-              {summary.accidentCount > 0 ? (
-                <Badge icon={AlertTriangle} tone="danger">
-                  {summary.accidentCount} kaza kaydı
-                </Badge>
+      <main className="wrap pb-[clamp(48px,6vw,80px)]">
+        {/* --- identity and summary ----------------------------------------- */}
+        <section className="grid gap-12 py-[clamp(36px,5vw,60px)] lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16">
+          <div>
+            <h1 className="display break-all text-[clamp(34px,4.4vw,60px)]">{vehicle.vin}</h1>
+            <p className="mb-9 mt-4 text-[16px] text-ink-2">
+              Bu şasi numarasıyla sicile kayıtlı araç.{" "}
+              {accidents > 0 ? (
+                <b className="text-red">
+                  {accidents} kaza kaydı taşıyor.
+                </b>
               ) : (
-                <Badge icon={Wrench} tone="neon">
-                  Kaza kaydı yok
-                </Badge>
+                <b className="text-green">Kaza kaydı yok.</b>
               )}
+            </p>
+
+            <SectionHeading n={1}>Özet</SectionHeading>
+            <div className="tbl-wrap">
+              <table className="ds">
+                <caption>
+                  <span className="cap-n">Tablo 1.</span> Araç bilgisi
+                </caption>
+                <thead>
+                  <tr>
+                    <th>Parametre</th>
+                    <th>Değer</th>
+                    <th>Kaynak</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Şasi numarası</td>
+                    <td className="numeric break-all text-ink">{vehicle.vin}</td>
+                    <td className="numeric text-[12.5px]">keccak256 → token</td>
+                  </tr>
+                  <tr>
+                    <td>Kilometre</td>
+                    <td className="numeric text-ink">{formatKm(summary.lastMileage)} km</td>
+                    <td className="numeric text-[12.5px]">son kayıt</td>
+                  </tr>
+                  <tr>
+                    <td>Kayıt sayısı</td>
+                    <td className="numeric text-ink">{records}</td>
+                    <td className="numeric text-[12.5px]">yalnızca eklenir</td>
+                  </tr>
+                  <tr className={cn(accidents > 0 && "hl")}>
+                    <td>Kaza kaydı</td>
+                    <td className={cn("numeric font-semibold", accidents > 0 ? "text-red" : "text-green")}>
+                      {accidents > 0 ? accidents : "Yok"}
+                    </td>
+                    <td className="numeric text-[12.5px]">silinemez</td>
+                  </tr>
+                  <tr>
+                    <td>Son güncelleme</td>
+                    <td className="numeric text-ink">{formatDate(summary.lastUpdatedAt)}</td>
+                    <td className="numeric text-[12.5px]">blok zamanı</td>
+                  </tr>
+                  <tr>
+                    <td>dNFT</td>
+                    <td className="numeric text-ink">#{nftId}</td>
+                    <td className="numeric text-[12.5px]">ERC-721</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
+            <p className="mt-3 text-[12.5px] text-ink-3">
+              Yukarıdakiler herkese açık önizleme. Sağlık skoru ve kayıt kayıt geçmiş tam
+              raporda.
+            </p>
           </div>
 
-          <VehicleScore tokenId={tokenId.toString()} />
-        </div>
-      </section>
+          <div className="space-y-10">
+            <VehicleImage tokenId={tokenId.toString()} />
+            <div className="max-w-[420px]">
+              <VehicleScore tokenId={tokenId.toString()} />
+            </div>
+          </div>
+        </section>
 
-      {/* --- trust card + timeline ----------------------------------------- */}
-      <div className="mt-6 grid gap-6 lg:grid-cols-[320px_1fr]">
-        <aside className="space-y-6">
-          <section className="glass p-6">
-            <h2 className="text-sm font-semibold text-bright">Güven kartı</h2>
-            <dl className="mt-5 space-y-4">
-              <Stat label="Toplam kayıt" value={String(summary.recordCount)} />
-              <Stat
-                label="Kaza kaydı"
-                value={summary.accidentCount > 0 ? String(summary.accidentCount) : "Yok"}
-                tone={summary.accidentCount > 0 ? "danger" : "neon"}
-              />
-              <Stat label="Son güncelleme" value={formatDate(summary.lastUpdatedAt)} />
-            </dl>
-          </section>
-
-          <section className="glass p-6">
-            <h2 className="text-sm font-semibold text-bright">Bu ne kadarını gösteriyor?</h2>
-            <p className="mt-3 text-xs leading-relaxed text-faint">
-              Yukarıdakiler herkese açık: aracın sicilde olduğu, güncel kilometresi,
-              kaç kayıt ve kaç kaza taşıdığı. Sağlık skoru, kayıtların tarihleri,
-              notları ve hangi servisin yazdığı tam raporda.
-            </p>
-            <p className="mt-4 text-xs leading-relaxed text-faint">
-              Rapor ücretinin büyük kısmı, o aracın geçmişini yazan servislere
-              paylaştırılır. Usta yazdıkça kazanır.
-            </p>
-          </section>
-        </aside>
-
-        <section>
+        <div className="border-t border-hair pt-10">
           <FullReport
             tokenId={tokenId.toString()}
             priceWei={vehicle.priceWei}
             garageCount={vehicle.garageCount}
             garageShareBps={vehicle.garageShareBps}
           />
-        </section>
-      </div>
+        </div>
+      </main>
 
-      <footer className="mt-16 text-center">
-        <a
-          href={explorerAddress(registryAddress)}
-          target="_blank"
-          rel="noreferrer"
-          className="numeric text-xs text-faint underline-offset-4 transition hover:text-violet-bright hover:underline"
-        >
-          Sicil kontratı {registryAddress}
-        </a>
-      </footer>
-    </main>
-  );
-}
-
-// --- pieces -----------------------------------------------------------------
-
-function Stat({
-  label,
-  value,
-  tone = "bright",
-}: {
-  label: string;
-  value: string;
-  tone?: "bright" | "neon" | "danger";
-}) {
-  const color =
-    tone === "neon" ? "text-neon" : tone === "danger" ? "text-danger" : "text-bright";
-
-  return (
-    <div className="flex items-baseline justify-between gap-4">
-      <dt className="text-sm text-muted">{label}</dt>
-      <dd className={`numeric text-sm font-medium ${color}`}>{value}</dd>
-    </div>
-  );
-}
-
-function Badge({
-  icon: Icon,
-  tone,
-  children,
-}: {
-  icon: typeof Wrench;
-  tone: "violet" | "neon" | "danger";
-  children: React.ReactNode;
-}) {
-  const styles = {
-    violet: "border-violet/40 bg-violet/15 text-violet-bright",
-    neon: "border-neon/35 bg-neon/10 text-neon",
-    danger: "border-danger/40 bg-danger/10 text-danger",
-  }[tone];
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium ${styles}`}
-    >
-      <Icon className="size-3.5" />
-      {children}
-    </span>
+      <PageFoot
+        id={
+          <>
+            <span className="numeric">{vehicle.vin}</span> ·{" "}
+            <a
+              href={explorerAddress(registryAddress)}
+              target="_blank"
+              rel="noreferrer"
+              className="numeric hover:text-ink"
+            >
+              {shortAddress(registryAddress)}
+            </a>
+          </>
+        }
+        page={1}
+      />
+    </>
   );
 }

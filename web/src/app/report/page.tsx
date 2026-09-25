@@ -1,7 +1,6 @@
-import { Brand } from "@/components/brand";
+import { DocHead, PageFoot, TopBand } from "@/components/datasheet";
 import { EarningsCard } from "@/components/earnings-card";
 import { ReportForm } from "@/components/report-form";
-import { WalletButton } from "@/components/wallet-button";
 
 export const metadata = {
   title: "Kayıt gir — MonadDrive",
@@ -13,23 +12,30 @@ export const metadata = {
  */
 export default function ReportPage() {
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-lg flex-col px-5 pb-12 pt-6">
-      <header className="mb-8 flex items-center justify-between gap-3">
-        <Brand />
-        <WalletButton />
-      </header>
+    <>
+      <TopBand current="report" />
+      <DocHead
+        tag="Servis kayıt formu"
+        meta={["Yalnızca onaylı servisler", "Monad Testnet"]}
+        partno="SKF-1"
+        partnoSub="Usta paneli"
+      />
 
-      <div className="mb-7">
-        <h1 className="text-2xl font-semibold tracking-tight text-bright">
-          Servis kaydı gir
-        </h1>
-        <p className="mt-1.5 text-sm text-muted">
-          Girdiğiniz kayıt saniyeler içinde zincire yazılır ve bir daha değiştirilemez.
-        </p>
-      </div>
+      <main className="wrap pb-[clamp(48px,6vw,80px)] pt-[clamp(32px,5vw,56px)]">
+        <div className="mx-auto max-w-[560px]">
+          <h1 className="display text-[clamp(34px,4.4vw,54px)]">
+            Servis kaydı <em>gir.</em>
+          </h1>
+          <p className="mb-10 mt-4 text-[16px] text-ink-2">
+            Girdiğiniz kayıt saniyeler içinde zincire yazılır ve bir daha değiştirilemez.
+          </p>
 
-      <EarningsCard />
-      <ReportForm />
-    </main>
+          <EarningsCard />
+          <ReportForm />
+        </div>
+      </main>
+
+      <PageFoot id="Servis kayıt formu" page={1} />
+    </>
   );
 }

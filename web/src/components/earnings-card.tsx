@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useEffect } from "react";
 import { formatEther } from "viem";
 import {
@@ -43,13 +43,12 @@ export function EarningsCard() {
   const busy = isPending || isConfirming;
 
   return (
-    <div className="glass mb-6 flex items-center gap-4 px-5 py-4">
-      <Coins className="size-5 shrink-0 text-neon" />
-
-      <div className="min-w-0 flex-1">
+    <div className="mb-10 flex items-end justify-between gap-4 border-y-[1.5px] border-ink py-4">
+      <div className="min-w-0">
         <p className="label">Rapor geliriniz</p>
-        <p className="numeric mt-0.5 text-lg font-semibold text-bright">
-          {formatEther(balance)} <span className="text-sm font-normal text-muted">MON</span>
+        <p className="mt-1 flex items-baseline gap-2">
+          <span className="partno text-[40px] leading-none">{formatEther(balance)}</span>
+          <span className="numeric text-[14px] text-ink-3">MON</span>
         </p>
       </div>
 
@@ -58,9 +57,9 @@ export function EarningsCard() {
           type="button"
           disabled={busy}
           onClick={() => writeContract({ ...registry, functionName: "withdrawEarnings" })}
-          className="inline-flex shrink-0 items-center gap-2 rounded-full border border-neon/40 bg-neon/10 px-4 py-2 text-sm font-medium text-neon transition hover:bg-neon/20 disabled:opacity-60"
+          className="btn shrink-0"
         >
-          {busy && <Loader2 className="size-3.5 animate-spin" />}
+          {busy && <Loader2 className="size-4 animate-spin" />}
           {busy ? "Çekiliyor" : "Çek"}
         </button>
       )}

@@ -90,8 +90,8 @@ export function scoreTone(score: number): RecordTone {
 }
 
 export const TONE_TEXT: Record<RecordTone, string> = {
-  good: "text-neon",
+  good: "text-green",
   warn: "text-amber",
-  bad: "text-danger",
-  neutral: "text-violet-bright",
+  bad: "text-red",
+  neutral: "text-ink",
 };

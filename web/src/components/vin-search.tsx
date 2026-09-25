@@ -1,6 +1,6 @@
 "use client";
 
-import { Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
@@ -13,6 +13,10 @@ const EXAMPLES = [
   { vin: "1HGBH41JXMN109186", label: "Ağır hasarlı" },
 ];
 
+/**
+ * The query box, drawn like the install command on a datasheet: one ruled row,
+ * the input, and the action fused to its right edge.
+ */
 export function VinSearch({ autoFocus = false }: { autoFocus?: boolean }) {
   const router = useRouter();
   const [vin, setVin] = useState("");
@@ -29,51 +33,45 @@ export function VinSearch({ autoFocus = false }: { autoFocus?: boolean }) {
 
   return (
     <div className="w-full">
-      <form onSubmit={go} className="flex flex-col gap-3 sm:flex-row">
-        <div
-          className={cn(
-            "flex flex-1 items-center gap-3 rounded-2xl border bg-ink/50 px-5 py-4 transition",
-            "focus-within:border-violet focus-within:bg-ink/80",
-            "border-violet/25",
-          )}
-        >
-          <Search className="size-4 shrink-0 text-faint" />
+      <form onSubmit={go} className="flex border-[1.5px] border-ink bg-white">
+        <label className="flex min-w-0 flex-1 items-center gap-3 px-4">
+          <Search className="size-4 shrink-0 text-ink-3" strokeWidth={2} />
+          <span className="sr-only">Şasi numarası</span>
           <input
             value={vin}
             autoFocus={autoFocus}
             onChange={(e) => setVin(normalizeVin(e.target.value).slice(0, 17))}
-            placeholder="Şasi numarasını girin"
+            placeholder="Şasi numarası (17 hane)"
             autoCapitalize="characters"
             autoCorrect="off"
             spellCheck={false}
-            aria-label="Şasi numarası"
-            className="numeric w-full bg-transparent text-base tracking-[0.08em] text-bright outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-faint/70"
+            className="numeric w-full min-w-0 bg-transparent py-3.5 text-[15px] tracking-[0.04em] text-ink outline-none placeholder:font-sans placeholder:tracking-normal placeholder:text-ink-3"
           />
-          <span className="numeric shrink-0 text-xs text-faint">{vin.length}/17</span>
-        </div>
-
+          <span className="numeric shrink-0 text-[12px] text-ink-3">{vin.length}/17</span>
+        </label>
         <button
           type="submit"
           disabled={!ready || busy}
           className={cn(
-            "rounded-2xl px-8 py-4 text-sm font-semibold transition",
+            "flex shrink-0 items-center gap-2 border-l-[1.5px] border-ink px-5 text-[14px] font-semibold transition",
             ready && !busy
-              ? "raised bg-violet text-white hover:bg-violet-bright"
-              : "cursor-not-allowed bg-slate text-faint",
+              ? "bg-ink text-white hover:bg-red"
+              : "cursor-not-allowed bg-paper-2 text-ink-3",
           )}
         >
           {busy ? "Sorgulanıyor..." : "Sorgula"}
+          {!busy && <ArrowRight className="size-4" strokeWidth={2} />}
         </button>
       </form>
 
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <span className="label">Örnek araçlar</span>
         {EXAMPLES.map((example) => (
           <button
             key={example.vin}
             type="button"
             onClick={() => setVin(example.vin)}
-            className="rounded-full border border-violet/20 bg-ink/40 px-3 py-1.5 text-xs text-muted transition hover:border-violet/50 hover:text-bright"
+            className="border border-hair bg-white px-2.5 py-1 text-[13px] text-ink-2 transition hover:border-ink hover:text-ink"
           >
             {example.label}
           </button>

@@ -7,10 +7,10 @@ import { useAccount, useReadContract } from "wagmi";
 import { monadTestnet } from "@/lib/chain";
 import { registry } from "@/lib/registry";
 
-import { ScoreGauge } from "./score-gauge";
+import { LockedScoreBar, ScoreBar } from "./score-gauge";
 
 /**
- * The vehicle's face: its on-chain NFT image and its health score.
+ * The vehicle's on-chain NFT image and its health score.
  *
  * Both are gated, and the image is gated *because* of the score - the on-chain
  * SVG has "SCORE 53/100" painted into it, so showing the picture would hand over
@@ -19,9 +19,6 @@ import { ScoreGauge } from "./score-gauge";
  * Neither is loaded on the server. They are read here, in the browser, only once
  * the chain confirms this wallet has access, so nothing leaks into the page
  * source for a visitor who has not paid.
- *
- * They ship as two components rather than one because they sit in different
- * columns of the identity band, with the vehicle's details between them.
  */
 
 function useReportAccess(id: bigint) {
@@ -38,6 +35,7 @@ function useReportAccess(id: bigint) {
   return data === true;
 }
 
+/** Figure 2: the dNFT, as the chain renders it. */
 export function VehicleImage({ tokenId }: { tokenId: string }) {
   const id = BigInt(tokenId);
   const unlocked = useReportAccess(id);
@@ -51,29 +49,40 @@ export function VehicleImage({ tokenId }: { tokenId: string }) {
 
   const image = decodeImage(uri as string | undefined);
 
-  // An outline rather than a filled box: a second surface inside the identity
-  // card reads as a card within a card.
-  if (!unlocked || !image) {
-    return (
-      <div className="mx-auto flex size-[168px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-violet/30">
-        <Lock className="size-5 text-violet-dim" />
-        <span className="label">dNFT görseli</span>
-      </div>
-    );
-  }
-
   return (
-    <Image
-      src={image}
-      alt="Aracın zincirde üretilen NFT görseli"
-      width={168}
-      height={168}
-      unoptimized
-      className="mx-auto rounded-2xl border border-violet/25"
-    />
+    <figure className="m-0">
+      <div className="fig-frame aspect-square w-full max-w-[260px]">
+        {unlocked && image ? (
+          <Image
+            src={image}
+            alt="Aracın zincirde üretilen dNFT görseli"
+            width={260}
+            height={260}
+            unoptimized
+            className="block size-full"
+          />
+        ) : (
+          <div
+            className="flex size-full flex-col items-center justify-center gap-2"
+            style={{
+              backgroundImage:
+                "repeating-linear-gradient(135deg, #f4f4f1 0 8px, transparent 8px 16px)",
+            }}
+          >
+            <Lock className="size-5 text-red" strokeWidth={2} />
+            <span className="label">dNFT görseli kilitli</span>
+          </div>
+        )}
+      </div>
+      <figcaption className="mt-2.5 max-w-[260px] text-[12.5px] text-ink-2">
+        <span className="font-bold text-ink">Şekil 2.</span> Zincirde üretilen dNFT; her
+        kayıtla yeniden çizilir.
+      </figcaption>
+    </figure>
   );
 }
 
+/** The health score on its scale, withheld until the report is open. */
 export function VehicleScore({ tokenId }: { tokenId: string }) {
   const id = BigInt(tokenId);
   const unlocked = useReportAccess(id);
@@ -85,50 +94,9 @@ export function VehicleScore({ tokenId }: { tokenId: string }) {
     query: { enabled: unlocked },
   });
 
-  if (!unlocked || score === undefined) return <LockedScore />;
+  if (!unlocked || score === undefined) return <LockedScoreBar />;
 
-  return <ScoreGauge score={Number(score)} className="mx-auto" />;
-}
-
-/**
- * An empty gauge with a lock in it. The ring is still there, so it is obvious a
- * score exists and that this is part of what is being bought.
- */
-function LockedScore() {
-  const radius = 54;
-  const circumference = 2 * Math.PI * radius;
-
-  return (
-    <div className="mx-auto flex flex-col items-center gap-3">
-      <div className="relative size-[132px]">
-        <svg viewBox="0 0 132 132" className="size-full -rotate-90" aria-hidden="true">
-          <circle
-            cx="66"
-            cy="66"
-            r={radius}
-            fill="none"
-            stroke="var(--color-slate)"
-            strokeWidth="9"
-          />
-          <circle
-            cx="66"
-            cy="66"
-            r={radius}
-            fill="none"
-            stroke="var(--color-violet-dim)"
-            strokeWidth="9"
-            strokeLinecap="round"
-            strokeDasharray={`${circumference * 0.08} ${circumference}`}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-          <Lock className="size-6 text-violet-bright" />
-          <span className="numeric text-sm text-faint">? / 100</span>
-        </div>
-      </div>
-      <p className="text-sm font-medium text-violet-bright">Sağlık skoru kilitli</p>
-    </div>
-  );
+  return <ScoreBar score={Number(score)} />;
 }
 
 /** Pulls the SVG out of the base64 metadata the contract returns. */

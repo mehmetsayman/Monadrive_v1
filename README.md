@@ -66,14 +66,17 @@ sanayide kullanılmaz.
 
 ### Alıcı sorgulama paneli
 
-Şasi numarasıyla açılıyor. Üst bant ve güven kartı herkese açık; servis geçmişi
+Şasi numarasıyla açılıyor ve bir ürün bilgi föyü (datasheet) gibi okunuyor:
+belge başlığında güncel kilometre, altında kayıt sayısı ve kaza bilgisini veren
+özet tablosu. Bunlar herkese açık; sağlık skoru, dNFT görseli ve servis geçmişi
 ödeme duvarının arkasında.
 
 ![Alıcı paneli — kilitli rapor](docs/screenshots/paywall.png)
 
-Ödemeden sonra aynı alan, aracın doğduğu günden bugüne dikey zaman çizelgesine
-dönüşüyor: her kaydın tarihi, kilometresi, notu ve onu imzalayan servisin adı,
-explorer bağlantısıyla birlikte.
+Ödemeden sonra aynı alan açılıyor: kilometrenin zaman içindeki grafiği (kazalar
+kırmızı işaretli) ve aracın doğduğu günden bugüne numaralı kayıt tablosu. Her
+satırda tarih, kilometre, işlem, onu imzalayan servisin adı (explorer
+bağlantısıyla) ve varsa fotoğrafın küçük görseli var.
 
 ### Giriş
 
@@ -106,7 +109,8 @@ inemiyor.
 | **Explorer** | [testnet.monadexplorer.com](https://testnet.monadexplorer.com) |
 | **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x38a1a92d70a835674af97404c7635b43d0471dad) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
 
-Zincirde şu an dört demo aracı ve 18 gerçek kayıt duruyor.
+Zincirde seed ile yazılmış dört demo aracı ve usta panelinden sonradan sicile
+alınan araçlar, bütün geçmişleriyle duruyor.
 
 ## Deneyin
 
@@ -120,7 +124,7 @@ Zincirde şu an dört demo aracı ve 18 gerçek kayıt duruyor.
 | `TMBJJ7NE0J0123456` | Sicile yeni girmiş — geçmişi henüz oluşuyor |
 | başka bir şey | Sicilde olmayan araç ekranı |
 
-Tam raporu açmak için cüzdan bağlayıp 0.05 MON ödemeniz gerekiyor. Kayıt girmek
+Tam raporu açmak için cüzdan bağlayıp 1 MON ödemeniz gerekiyor. Kayıt girmek
 içinse cüzdanınızın yetkili servis olarak onaylanmış olması gerekiyor (aşağıda
 [yerelde çalıştırma](#yerelde-çalıştırma)).
 
@@ -236,7 +240,7 @@ kullanıcının tereddüdü değil.
 
 ## Gelir modeli
 
-Alıcı bir aracın tam raporunu açtığında **0.05 MON** ödüyor. Bu ücret zincirde,
+Alıcı bir aracın tam raporunu açtığında **1 MON** ödüyor. Bu ücret zincirde,
 tek işlemde bölüşülüyor:
 
 | Kime | Pay | Neye göre |
@@ -244,7 +248,9 @@ tek işlemde bölüşülüyor:
 | Geçmişi yazan servisler | **%70** | O araçta kaç kayıt yazdıklarıyla orantılı |
 | Platform | **%30** | Sabit |
 
-Bir servis o araçtaki 5 kaydın 3'ünü yazdıysa, servis payının 3/5'ini alıyor.
+Bir servis o araçtaki 5 kaydın 3'ünü yazdıysa, servis payının 3/5'ini alıyor:
+1 MON'luk bir satışta platforma 0.3 MON, servislere toplam 0.7 MON gidiyor; bu
+servis 0.42 MON alıyor.
 
 İki pay iki farklı yoldan gidiyor. **Platform payı satış anında doğrudan sicil
 sahibinin cüzdanına** yatıyor: kendi komisyonunu tahsil etmek için ayrıca işlem
@@ -337,8 +343,10 @@ Hepsi `contracts/` içinde çalışır.
 > `npm run newcar` çalıştırın.
 
 Fotoğraf yükleme isteğe bağlı: `web/.env.local` içine `PINATA_JWT=...` eklerseniz
-aktifleşir. Eklemezseniz uygulama çalışmaya devam eder, yalnızca fotoğraf alanı
-yapılandırılmadığını söyler.
+aktifleşir (anahtarın `org:files:write` yetkisi olmalı). Eklemezseniz uygulama
+çalışmaya devam eder, yalnızca fotoğraf alanı yapılandırılmadığını söyler.
+Vercel gibi bir ortama yayınlarken aynı `PINATA_JWT` değişkenini orada da
+tanımlamak gerekiyor; `.env.local` depoya girmiyor.
 
 > `.env` dosyaları gitignore'da. Deploy için kullandığınız cüzdanı atılabilir bir
 > testnet cüzdanı olarak tutun.

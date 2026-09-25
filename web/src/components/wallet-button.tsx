@@ -6,7 +6,18 @@ import { useAccount, useConnect, useDisconnect, useSwitchChain } from "wagmi";
 import { monadTestnet } from "@/lib/chain";
 import { cn, shortAddress } from "@/lib/utils";
 
-export function WalletButton({ className }: { className?: string }) {
+/**
+ * Connect, switch network, or show who is connected.
+ *
+ * Two surfaces: white on the red top band, black on paper. Same states on both.
+ */
+export function WalletButton({
+  variant = "default",
+  className,
+}: {
+  variant?: "default" | "on-red";
+  className?: string;
+}) {
   const { address, isConnected, chainId } = useAccount();
   const { connect, connectors, isPending } = useConnect();
   const { disconnect } = useDisconnect();
@@ -14,6 +25,7 @@ export function WalletButton({ className }: { className?: string }) {
 
   const injected = connectors[0];
   const wrongNetwork = isConnected && chainId !== monadTestnet.id;
+  const onRed = variant === "on-red";
 
   if (!isConnected) {
     return (
@@ -21,14 +33,9 @@ export function WalletButton({ className }: { className?: string }) {
         type="button"
         disabled={isPending || !injected}
         onClick={() => injected && connect({ connector: injected })}
-        className={cn(
-          "inline-flex shrink-0 items-center gap-2 rounded-full border border-violet/40 bg-violet/15 px-4 py-2.5 sm:px-5",
-          "text-sm font-medium text-bright transition",
-          "hover:border-violet hover:bg-violet/25 disabled:opacity-50",
-          className,
-        )}
+        className={cn("btn shrink-0", onRed && "btn-on-red", className)}
       >
-        <Wallet className="size-4" />
+        <Wallet className="size-4" strokeWidth={2} />
         {isPending ? "Bağlanıyor..." : "Cüzdan Bağla"}
       </button>
     );
@@ -40,13 +47,9 @@ export function WalletButton({ className }: { className?: string }) {
         type="button"
         disabled={isSwitching}
         onClick={() => switchChain({ chainId: monadTestnet.id })}
-        className={cn(
-          "inline-flex shrink-0 items-center gap-2 rounded-full border border-amber/50 bg-amber/15 px-4 py-2.5 sm:px-5",
-          "text-sm font-medium text-amber transition hover:bg-amber/25 disabled:opacity-50",
-          className,
-        )}
+        className={cn("btn shrink-0", onRed && "btn-on-red", className)}
       >
-        <AlertTriangle className="size-4" />
+        <AlertTriangle className="size-4" strokeWidth={2} />
         {isSwitching ? "Ağ değişiyor..." : "Monad Testnet'e geç"}
       </button>
     );
@@ -55,17 +58,25 @@ export function WalletButton({ className }: { className?: string }) {
   return (
     <div
       className={cn(
-        "inline-flex shrink-0 items-center gap-3 rounded-full border border-violet/25 bg-ink/60 py-1.5 pl-4 pr-1.5",
+        "inline-flex shrink-0 items-center border-[1.5px]",
+        onRed ? "border-white text-white" : "border-ink text-ink",
         className,
       )}
     >
-      <span className="size-1.5 rounded-full bg-neon" />
-      <span className="numeric text-sm text-muted">{shortAddress(address!)}</span>
+      <span className="flex items-center gap-2 px-3 py-[7px]">
+        <span className={cn("size-2", onRed ? "bg-white" : "bg-green")} aria-hidden="true" />
+        <span className="numeric text-[13px]">{shortAddress(address!)}</span>
+      </span>
       <button
         type="button"
         onClick={() => disconnect()}
         aria-label="Cüzdan bağlantısını kes"
-        className="rounded-full p-2 text-faint transition hover:bg-violet/15 hover:text-bright"
+        className={cn(
+          "self-stretch border-l-[1.5px] px-2.5 transition",
+          onRed
+            ? "border-white hover:bg-white hover:text-red"
+            : "border-ink hover:bg-ink hover:text-white",
+        )}
       >
         <LogOut className="size-3.5" />
       </button>
