@@ -8,7 +8,15 @@ import { NextResponse } from "next/server";
  * write credential in every visitor's devtools.
  */
 
-const PINATA_ENDPOINT = "https://api.pinata.cloud/pinning/pinFileToIPFS";
+/**
+ * Pinata's V3 upload endpoint. It defaults to the *private* network, and a
+ * private file does not resolve on a public gateway - the timeline's "Belge"
+ * link would open nothing. The whole point of an attachment on a public
+ * registry is that a buyer can see it, so every upload goes out as public.
+ *
+ * The JWT needs the `org:files:write` scope.
+ */
+const PINATA_ENDPOINT = "https://uploads.pinata.cloud/v3/files";
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED = ["image/jpeg", "image/png", "image/webp", "image/heic", "application/pdf"];
 
@@ -49,10 +57,8 @@ export async function POST(request: Request) {
 
   const outbound = new FormData();
   outbound.append("file", file, file.name || "kayit");
-  outbound.append(
-    "pinataMetadata",
-    JSON.stringify({ name: `monaddrive/${Date.now()}-${file.name || "kayit"}` }),
-  );
+  outbound.append("network", "public");
+  outbound.append("name", `monaddrive/${Date.now()}-${file.name || "kayit"}`);
 
   const response = await fetch(PINATA_ENDPOINT, {
     method: "POST",
@@ -69,7 +75,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const { IpfsHash } = (await response.json()) as { IpfsHash: string };
+  const payload = (await response.json()) as { data?: { cid?: string } };
+  const cid = payload.data?.cid;
 
-  return NextResponse.json({ cid: IpfsHash });
+  if (!cid) {
+    console.error("pinata upload returned no cid", JSON.stringify(payload));
+    return NextResponse.json({ error: "IPFS yükleme başarısız oldu." }, { status: 502 });
+  }
+
+  return NextResponse.json({ cid });
 }
