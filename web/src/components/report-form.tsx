@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   Check,
+  FilePlus2,
   Loader2,
   Paperclip,
   ShieldAlert,
@@ -44,6 +45,13 @@ export function ReportForm() {
    */
   const todayIso = new Date().toISOString().slice(0, 10);
   const [servicedOn, setServicedOn] = useState(todayIso);
+
+  /**
+   * Only used when opening a file for a vehicle the registry has never seen.
+   * Empty means the token stays with the garage until the owner claims it,
+   * which is what the contract does for the zero address.
+   */
+  const [vehicleOwner, setVehicleOwner] = useState("");
 
   /** IPFS attachment: the photo or invoice backing this record. */
   const [attachment, setAttachment] = useState<{ name: string; cid: string } | null>(null);
@@ -92,6 +100,12 @@ export function ReportForm() {
   const recordedKm = summary?.registered ? Number(summary.lastMileage) : null;
 
   /**
+   * A VIN the chain has never seen is not an error - it is the other half of the
+   * garage's job. The first shop to touch a car opens its file.
+   */
+  const registering = Boolean(summary) && summary?.registered === false;
+
+  /**
    * The contract would reject a rollback anyway. Catching it here means the
    * garage sees why before paying for a signature, not after.
    */
@@ -100,7 +114,6 @@ export function ReportForm() {
 
   const problem = useMemo(() => {
     if (!isCompleteVin(vin)) return "Şasi numarası 17 karakter olmalı.";
-    if (summary && !summary.registered) return "Bu şasi numarası sicile kayıtlı değil.";
     if (mileageNumber === null || Number.isNaN(mileageNumber)) return "Kilometre girin.";
     if (mileageNumber <= 0) return "Kilometre sıfırdan büyük olmalı.";
     if (rollback) {
@@ -108,8 +121,20 @@ export function ReportForm() {
     }
     if (!servicedOn) return "İşlem tarihi girin.";
     if (servicedOn > todayIso) return "İşlem tarihi gelecekte olamaz.";
+    if (registering && vehicleOwner.trim() && !/^0x[0-9a-fA-F]{40}$/.test(vehicleOwner.trim())) {
+      return "Araç sahibi cüzdanı geçerli bir adres değil.";
+    }
     return null;
-  }, [vin, summary, mileageNumber, rollback, recordedKm, servicedOn, todayIso]);
+  }, [
+    vin,
+    mileageNumber,
+    rollback,
+    recordedKm,
+    servicedOn,
+    todayIso,
+    registering,
+    vehicleOwner,
+  ]);
 
   const canSubmit =
     onRightNetwork &&
@@ -143,13 +168,32 @@ export function ReportForm() {
     if (!canSubmit) return;
     setConfirmMs(null);
     sentAt.current = null;
+    const day = dateToServiceDay(new Date(servicedOn));
+
+    if (registering) {
+      writeContract({
+        ...registry,
+        functionName: "registerVehicle",
+        args: [
+          normalizeVin(vin),
+          mileageNumber!,
+          day,
+          // Zero address keeps the token at the garage until the owner claims it.
+          (vehicleOwner.trim() || "0x0000000000000000000000000000000000000000") as `0x${string}`,
+          attachment?.cid ?? "",
+          note.trim() || "Sicile ilk kayıt",
+        ],
+      });
+      return;
+    }
+
     writeContract({
       ...registry,
       functionName: "addRecordByVin",
       args: [
         normalizeVin(vin),
         mileageNumber!,
-        dateToServiceDay(new Date(servicedOn)),
+        day,
         typeValue,
         attachment?.cid ?? "",
         note.trim(),
@@ -163,6 +207,7 @@ export function ReportForm() {
     setMileage("");
     setNote("");
     setServicedOn(todayIso);
+    setVehicleOwner("");
     setAttachment(null);
     setUploadError(null);
   }
@@ -209,7 +254,7 @@ export function ReportForm() {
     return (
       <Centered
         icon={<Check className="size-7 text-neon" />}
-        title="Zincire yazıldı"
+        title={registering ? "Araç sicile açıldı" : "Zincire yazıldı"}
         body="Kayıt artık silinemez ve değiştirilemez."
       >
         {confirmMs !== null && (
@@ -273,6 +318,19 @@ export function ReportForm() {
         </div>
       )}
 
+      {registering && (
+        <div className="rounded-2xl border border-violet/30 bg-violet/10 px-4 py-3.5">
+          <p className="flex items-center gap-2 text-sm font-medium text-violet-bright">
+            <FilePlus2 className="size-4 shrink-0" />
+            Bu araç sicilde yok
+          </p>
+          <p className="mt-1.5 text-xs leading-relaxed text-muted">
+            İlk kaydı siz açıyorsunuz. Girdiğiniz kilometre aracın başlangıç
+            değeri olur ve bundan sonra hiçbir servis bunun altına inemez.
+          </p>
+        </div>
+      )}
+
       <Field label="Kilometre" error={rollback}>
         <input
           value={mileage}
@@ -297,6 +355,18 @@ export function ReportForm() {
         />
       </Field>
 
+      {registering ? (
+        <Field label="Araç sahibi cüzdanı (isteğe bağlı)">
+          <input
+            value={vehicleOwner}
+            onChange={(e) => setVehicleOwner(e.target.value.trim())}
+            placeholder="0x... — boş bırakırsanız araç serviste kalır"
+            autoCorrect="off"
+            spellCheck={false}
+            className="numeric w-full bg-transparent text-sm text-bright outline-none placeholder:font-sans placeholder:text-faint/60"
+          />
+        </Field>
+      ) : (
       <div>
         <p className="label mb-2.5 px-1">İşlem tipi</p>
         <div className="grid grid-cols-2 gap-2">
@@ -317,6 +387,7 @@ export function ReportForm() {
           ))}
         </div>
       </div>
+      )}
 
       <Field label="Not (isteğe bağlı)">
         <input
@@ -411,7 +482,7 @@ export function ReportForm() {
           </>
         ) : (
           <>
-            Monad Ağına Kaydet
+            {registering ? "Aracı Sicile Kaydet" : "Monad Ağına Kaydet"}
             <ArrowRight className="size-5" />
           </>
         )}
