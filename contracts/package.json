@@ -13,7 +13,8 @@
     "buy": "hardhat run scripts/buy.ts --network monadTestnet",
     "keys": "hardhat run scripts/keys.ts --network monadTestnet",
     "roles": "hardhat run scripts/roles.ts --network monadTestnet",
-    "newcar": "hardhat run scripts/newcar.ts --network monadTestnet"
+    "newcar": "hardhat run scripts/newcar.ts --network monadTestnet",
+    "usta-everywhere": "hardhat run scripts/usta-everywhere.ts --network monadTestnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",
