@@ -67,6 +67,8 @@ console.log(
 
 const rows: Array<{ role: string; address: Hex; earnings: bigint }> = [];
 
+// The platform is paid at the moment of sale, so this column is normally zero
+// for it. A non-zero value means a transfer failed and fell back to the ledger.
 const ownerEarnings = await read<bigint>("earnings", [deployment.owner]);
 rows.push({ role: "platform", address: deployment.owner, earnings: ownerEarnings });
 

@@ -496,12 +496,37 @@ describe("VehicleRegistry", async () => {
 
       const one = await registry.read.earnings([garage.account.address]);
       const two = await registry.read.earnings([garage2.account.address]);
-      const platform = await registry.read.earnings([deployer.account.address]);
 
       assert.equal(one, garagePool / 2n, "first garage's share is wrong");
       assert.equal(two, garagePool / 2n, "second garage's share is wrong");
-      assert.equal(platform, platformCut, "platform cut is wrong");
-      assert.equal(one + two + platform, PRICE, "the split does not add up to the price");
+      assert.equal(
+        one + two + platformCut,
+        PRICE,
+        "the split does not add up to the price",
+      );
+    });
+
+    it("pays the platform its cut straight into the wallet, not a balance", async () => {
+      const tokenId = await register(10_000);
+      const publicClient = await viem.getPublicClient();
+
+      const before = await publicClient.getBalance({ address: deployer.account.address });
+
+      await registry.write.purchaseReport([tokenId], {
+        account: buyer.account,
+        value: PRICE,
+      });
+
+      const after = await publicClient.getBalance({ address: deployer.account.address });
+      const platformCut = (PRICE * BigInt(PLATFORM_BPS)) / 10_000n;
+
+      // The owner signed nothing here, so no gas muddies the comparison.
+      assert.equal(after - before, platformCut, "platform was not paid on the spot");
+      assert.equal(
+        await registry.read.earnings([deployer.account.address]),
+        0n,
+        "nothing should be left waiting to be withdrawn",
+      );
     });
 
     it("weights the split by how much of the history each garage wrote", async () => {

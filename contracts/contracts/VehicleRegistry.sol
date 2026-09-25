@@ -266,8 +266,6 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
 
         // Rounding dust, and the whole pool if a vehicle somehow has no reporters.
         uint256 platformTotal = platformCut + (garagePool - distributed);
-        earnings[owner()] += platformTotal;
-        emit EarningsAccrued(owner(), tokenId, platformTotal);
 
         emit ReportPurchased(tokenId, msg.sender, price);
 
@@ -275,6 +273,27 @@ contract VehicleRegistry is ERC721, ServiceRegistry {
         if (excess > 0) {
             (bool refunded,) = msg.sender.call{value: excess}("");
             if (!refunded) revert PayoutFailed(msg.sender, excess);
+        }
+
+        // The platform's cut is paid out here and now. The operator running the
+        // registry should not have to claim their own commission, and a balance
+        // that only exists until someone remembers to withdraw it is a balance
+        // people think they never earned.
+        //
+        // Garages stay on pull payments: there can be several per vehicle, and one
+        // address that cannot receive would otherwise take the whole sale down.
+        //
+        // Sent last, once every other balance is settled, and falling back to the
+        // pull ledger if it fails - a sale must not depend on the owner's address
+        // being able to accept a transfer.
+        address platform = owner();
+        (bool paid,) = platform.call{value: platformTotal}("");
+
+        if (paid) {
+            emit PlatformPaid(platform, tokenId, platformTotal);
+        } else {
+            earnings[platform] += platformTotal;
+            emit EarningsAccrued(platform, tokenId, platformTotal);
         }
     }
 

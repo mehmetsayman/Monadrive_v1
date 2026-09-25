@@ -71,6 +71,7 @@ interface IVehicleRegistry {
 
     event ReportPurchased(uint256 indexed tokenId, address indexed buyer, uint256 price);
     event EarningsAccrued(address indexed beneficiary, uint256 indexed tokenId, uint256 amount);
+    event PlatformPaid(address indexed platform, uint256 indexed tokenId, uint256 amount);
     event EarningsWithdrawn(address indexed beneficiary, uint256 amount);
     event ReportPriceSet(uint256 price);
     event PlatformShareSet(uint16 bps);

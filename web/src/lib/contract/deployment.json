@@ -1,10 +1,10 @@
 {
   "network": "monadTestnet",
   "chainId": 10143,
-  "address": "0x530ae2809c0828ea55a4a407903c4f9d0172de30",
+  "address": "0x38a1a92d70a835674af97404c7635b43d0471dad",
   "owner": "0x1c6ecefd8396d6e74615664f81e97167582db944",
   "reportPrice": "50000000000000000",
   "platformShareBps": 3000,
-  "deployedAtBlock": 65258745,
-  "deployedAt": "2026-09-24T09:18:23.479Z"
+  "deployedAtBlock": 65638540,
+  "deployedAt": "2026-09-25T18:07:15.091Z"
 }

@@ -8,9 +8,9 @@ Her araç bir dinamik NFT. Servis geçmişi zincirde, kilometre geri alınamıyo
 Raporu okuyan öder, geçmişi yazan usta kazanır.
 
 [![Monad](https://img.shields.io/badge/Monad-Testnet-836EF9?style=flat-square)](https://monad.xyz)
-[![Kontrat](https://img.shields.io/badge/kontrat-0x530ae2...72de30-836EF9?style=flat-square)](https://testnet.monadexplorer.com/address/0x530ae2809c0828ea55a4a407903c4f9d0172de30)
-[![Testler](https://img.shields.io/badge/testler-37%2F37-A0FF9E?style=flat-square)](#testler)
-[![Sourcify](https://img.shields.io/badge/kaynak-doğrulandı-A0FF9E?style=flat-square)](https://sourcify.dev/server/repo-ui/10143/0x530ae2809c0828ea55a4a407903c4f9d0172de30)
+[![Kontrat](https://img.shields.io/badge/kontrat-0x38a1a9...471dad-836EF9?style=flat-square)](https://testnet.monadexplorer.com/address/0x38a1a92d70a835674af97404c7635b43d0471dad)
+[![Testler](https://img.shields.io/badge/testler-38%2F38-A0FF9E?style=flat-square)](#testler)
+[![Sourcify](https://img.shields.io/badge/kaynak-doğrulandı-A0FF9E?style=flat-square)](https://sourcify.dev/server/repo-ui/10143/0x38a1a92d70a835674af97404c7635b43d0471dad)
 [![Next.js](https://img.shields.io/badge/Next.js_16-black?style=flat-square&logo=next.js)](https://nextjs.org)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.28-836EF9?style=flat-square)](https://soliditylang.org)
 
@@ -101,10 +101,10 @@ inemiyor.
 | | |
 |---|---|
 | **Ağ** | Monad Testnet (chainId `10143`) |
-| **Sicil kontratı** | [`0x530ae2809c0828ea55a4a407903c4f9d0172de30`](https://testnet.monadexplorer.com/address/0x530ae2809c0828ea55a4a407903c4f9d0172de30) |
+| **Sicil kontratı** | [`0x38a1a92d70a835674af97404c7635b43d0471dad`](https://testnet.monadexplorer.com/address/0x38a1a92d70a835674af97404c7635b43d0471dad) |
 | **RPC** | `https://testnet-rpc.monad.xyz` |
 | **Explorer** | [testnet.monadexplorer.com](https://testnet.monadexplorer.com) |
-| **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x530ae2809c0828ea55a4a407903c4f9d0172de30) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
+| **Doğrulanmış kaynak** | [Sourcify](https://sourcify.dev/server/repo-ui/10143/0x38a1a92d70a835674af97404c7635b43d0471dad) — kontratı okuyup buradaki iddiaları kendiniz kontrol edebilirsiniz |
 
 Zincirde şu an dört demo aracı ve 18 gerçek kayıt duruyor.
 
@@ -245,9 +245,16 @@ tek işlemde bölüşülüyor:
 | Platform | **%30** | Sabit |
 
 Bir servis o araçtaki 5 kaydın 3'ünü yazdıysa, servis payının 3/5'ini alıyor.
-Ödemeler kontratta biriktiriliyor ve herkes kendi bakiyesini `withdrawEarnings`
-ile çekiyor — bir alıcının ödemesi, ödeme alamayan bir adres yüzünden
-takılmıyor.
+
+İki pay iki farklı yoldan gidiyor. **Platform payı satış anında doğrudan sicil
+sahibinin cüzdanına** yatıyor: kendi komisyonunu tahsil etmek için ayrıca işlem
+yapmak gerekmiyor, ve yalnızca biri hatırlayınca çekilen bir bakiye, insanların
+hiç kazanmadığını sandığı bir bakiyedir. **Servis payları kontratta birikiyor**
+ve her servis kendi bakiyesini `withdrawEarnings` ile çekiyor: bir araçta birden
+fazla servis olabilir, ve para alamayan tek bir adres bütün satışı düşürmemeli.
+
+Platform ödemesi en sona, bütün hesaplar kapandıktan sonra gönderiliyor; başarısız
+olursa satış yine tamamlanıyor ve pay çekilmeyi bekleyen bakiyeye düşüyor.
 
 **Bu neden önemli:** "Usta neden oturup bunu telefona girsin?" sorusunun cevabı
 bu. Yazdığı kayıt okundukça kazanıyor. Sicil ne kadar dolu olursa raporlar o
@@ -262,7 +269,7 @@ görüyor.
 
 ## Testler
 
-37 test, hepsi geçiyor:
+38 test, hepsi geçiyor:
 
 ```
 npm --prefix contracts test
@@ -296,7 +303,7 @@ cd Monadrive_v1
 # 1. Kontratlar
 cd contracts
 npm install
-npm test                       # 37 test, zincire bağlanmadan çalışır
+npm test                       # 38 test, zincire bağlanmadan çalışır
 
 cp .env.example .env           # MONAD_PRIVATE_KEY satırını doldurun
 npm run deploy                 # Monad Testnet'e çıkar
