@@ -12,7 +12,8 @@
     "status": "hardhat run scripts/status.ts --network monadTestnet",
     "buy": "hardhat run scripts/buy.ts --network monadTestnet",
     "keys": "hardhat run scripts/keys.ts --network monadTestnet",
-    "roles": "hardhat run scripts/roles.ts --network monadTestnet"
+    "roles": "hardhat run scripts/roles.ts --network monadTestnet",
+    "newcar": "hardhat run scripts/newcar.ts --network monadTestnet"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.7",

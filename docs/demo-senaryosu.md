@@ -21,8 +21,11 @@ Sırayı bozmayın. Her parça bir öncekinin kurduğu beklentiyi kullanıyor.
 - [ ] **Her hesap en az bir işlem göndermiş olmalı.** Hiç göndermemişse MetaMask'te
       o hesaba geçip kendine 0 MON gönderin — Monad RPC'si aksi halde ilk kontrat
       çağrısını reddeder
-- [ ] Müşteri hesabı gösterilecek araç için raporu **daha önce almamış olsun**,
-      yoksa ödeme ekranı hiç görünmez
+- [ ] **Kayıttan hemen önce `npm --prefix contracts run newcar` çalıştırın.**
+      Rapor erişimi araç başına kalıcıdır: müşteri hesabı bir aracı bir kez
+      açtıysa o araçta ödeme ekranı bir daha çıkmaz. Script size tertemiz bir
+      şasi numarası verir ve onu nerede kullanacağınızı yazar. Geçmişi neredeyse
+      boş olduğu için ustanın payı da büyük ve gösterilebilir olur
 - [ ] Tarayıcı sekmeleri kapalı, bildirimler susturulmuş
 - [ ] Telefon ekranı kaydı için `/report` açık (ikinci cihaz veya responsive mod)
 - [ ] Şu şasi numaraları panoda hazır:

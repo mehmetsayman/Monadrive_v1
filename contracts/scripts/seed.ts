@@ -50,6 +50,18 @@ const GARAGES = [
  * needs headroom for several writes, not just their real cost.
  */
 const GARAGE_TARGET_BALANCE = parseEther("0.4");
+
+/**
+ * Who holds the vehicle NFTs.
+ *
+ * Deliberately not the deployer. The registry operator owning every car on the
+ * registry is odd on its face, and it breaks the demo: a vehicle's owner reads
+ * its report for free, so the platform wallet could never see the paywall it is
+ * charging for.
+ */
+const VEHICLE_OWNER = privateKeyToAccount(
+  keccak256(toHex("monaddrive/demo-vehicle-owner/v1")),
+).address;
 const GARAGE_MIN_BALANCE = parseEther("0.15");
 
 type Step = {
@@ -247,7 +259,7 @@ for (const vehicle of VEHICLES) {
       vehicle.vin,
       vehicle.genesis.mileage,
       toServiceDay(vehicle.genesis.on),
-      deployer.account.address,
+      VEHICLE_OWNER,
       "",
       vehicle.genesis.note,
     ], overrides),
